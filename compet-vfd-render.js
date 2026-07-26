@@ -1,4 +1,4 @@
-import { GLYPH_PATHS } from "./compet-vfd-glyphs.js?v=0.2.0";
+import { glyphPaths } from "./compet-vfd-glyphs.js?v=0.3.0";
 
 export const renderMethods = {
   _render() {
@@ -50,8 +50,9 @@ export const renderMethods = {
       "M20 64 C31 60 49 60 60 64"
     ];
     const ghosts = ghostPaths.map((d) => `<path class="ghost" d="${d}"/>`).join("");
-    const glyph = (GLYPH_PATHS[character] || []).map((d) => `<path class="glyph" d="${d}" filter="url(#${id}-glow)"/><path class="phosphor" d="${d}"/>`).join("");
-    return `<div class="tube" data-index="${index}" data-character="${this._esc(character)}">
+    const selectedGlyphs = glyphPaths(this._config.style);
+    const glyph = (selectedGlyphs[character] || []).map((d) => `<path class="glyph" d="${d}" filter="url(#${id}-glow)"/><path class="phosphor" d="${d}"/>`).join("");
+    return `<div class="tube ${this._config.style === "alternative" ? "alternative" : "original"}" data-index="${index}" data-character="${this._esc(character)}">
       <i class="cap top"></i><svg viewBox="0 0 80 132" aria-hidden="true">
         <defs>
           <filter id="${id}-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="1.45" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -71,7 +72,7 @@ export const renderMethods = {
   _decimalMarker(boundary) {
     const c = this._config;
     const x = 15 + boundary * (c.tube_width + c.tube_gap) - c.tube_gap / 2;
-    return `<i class="decimal-marker" style="left:calc(${x}px * var(--s))" aria-hidden="true"></i>`;
+    return `<span class="decimal-marker-wrap" style="left:calc(${x}px * var(--s))" aria-hidden="true"><i class="decimal-marker"></i></span>`;
   },
 
   _markers(count) {
