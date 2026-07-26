@@ -13,7 +13,7 @@ export const renderMethods = {
       <ha-card class="${c.transparent_card ? "transparent" : ""}">
         <div class="host" role="button" tabindex="0" aria-label="${this._esc(c.label || c.entity || "COMPET display")}">
           <div class="stage"><div class="assembly ${frameless ? "frameless" : "black"}"
-            style="--s:${c.scale};--tw:${c.tube_width}px;--th:${c.tube_height}px;--gap:${c.tube_gap}px;--screw:${c.screw_size}px;--glow:${this._color(c.glow_color,"#20f56b")};--off:${this._color(c.inactive_color,"rgba(32,245,107,.035)")};--marker:${this._color(c.decimal_marker_color,"#e33b32")};--duration:${this._int(c.animation_duration,0,1500,190)}ms">
+            style="--s:${c.scale};--tw:${c.tube_width}px;--th:${c.tube_height}px;--gap:${c.tube_gap}px;--screw:${c.screw_size}px;--glow:${this._color(c.glow_color,"#20f56b")};--phosphor:${this._color(c.phosphor_color,"#d8ffe3")};--off:${this._color(c.inactive_color,"rgba(32,245,107,.035)")};--marker:${this._color(c.decimal_marker_color,"#d9362e")};--duration:${this._int(c.animation_duration,0,1500,190)}ms">
             ${c.screws && !frameless ? this._screws() : ""}
             <div class="window">
               <div class="row">${chars.map((x, i) => this._tube(i, x)).join("")}</div>
@@ -41,13 +41,8 @@ export const renderMethods = {
   _tube(index, character) {
     const id = `cvfd-${index}`;
     const ghostPaths = [
-      "M23 18 C34 13 51 13 62 18",
-      "M63 22 C66 36 65 48 61 58",
-      "M60 72 C64 86 61 101 54 110",
-      "M53 112 C42 116 29 116 18 111",
-      "M16 106 C12 91 13 79 17 68",
-      "M19 57 C15 44 16 31 22 21",
-      "M20 64 C31 60 49 60 60 64"
+      "M23 18 C34 13 51 13 62 18","M63 22 C66 36 65 48 61 58","M60 72 C64 86 61 101 54 110",
+      "M53 112 C42 116 29 116 18 111","M16 106 C12 91 13 79 17 68","M19 57 C15 44 16 31 22 21","M20 64 C31 60 49 60 60 64"
     ];
     const ghosts = ghostPaths.map((d) => `<path class="ghost" d="${d}"/>`).join("");
     const selectedGlyphs = glyphPaths(this._config.style);
@@ -72,7 +67,7 @@ export const renderMethods = {
   _decimalMarker(boundary) {
     const c = this._config;
     const x = 15 + boundary * (c.tube_width + c.tube_gap) - c.tube_gap / 2;
-    return `<span class="decimal-marker-wrap" style="left:calc(${x}px * var(--s))" aria-hidden="true"><i class="decimal-marker"></i></span>`;
+    return `<span class="decimal-marker-wrap" style="left:calc(${x}px * var(--s))" aria-hidden="true"><i class="decimal-marker"><b></b></i></span>`;
   },
 
   _markers(count) {
