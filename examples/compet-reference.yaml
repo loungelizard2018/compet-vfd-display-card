@@ -1,0 +1,33 @@
+type: custom:compet-vfd-display-card
+entity: sensor.energy_total
+integer_digits: 10
+decimals: 1
+decimal_separator: "."
+leading_zeroes: true
+
+label: COMPET 18 NUMERIC DISPLAY
+unit: kWh
+
+frame: gauge_black
+screws: true
+screw_size: 30
+transparent_card: true
+
+glow_color: "#20f56b"
+inactive_color: "rgba(32,245,107,0.055)"
+show_mesh: true
+
+tube_width: 64
+tube_height: 124
+tube_gap: 8
+
+show_red_markers: true
+marker_positions: [5, 8, 10]
+
+animation: true
+animation_duration: 190
+
+fit_to_card: true
+allow_upscale: false
+max_fit_scale: 1
+scale: 1
