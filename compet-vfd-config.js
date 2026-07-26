@@ -3,6 +3,10 @@ export const configMethods = {
     if (!config || (!config.entity && config.value === undefined)) {
       throw new Error("COMPET VFD Display Card: configure 'entity' or 'value'.");
     }
+    const requestedStyle = String(config.style ?? config.glyph_style ?? "original").toLowerCase();
+    if (!["original", "alternative"].includes(requestedStyle)) {
+      throw new Error("style must be 'original' or 'alternative'.");
+    }
     this._config = {
       entity: null,
       attribute: null,
@@ -11,6 +15,7 @@ export const configMethods = {
       decimals: 0,
       leading_zeroes: false,
       reserve_sign_slot: false,
+      style: "original",
       label: "COMPET DISPLAY",
       unit: "",
       show_label: true,
@@ -37,6 +42,7 @@ export const configMethods = {
       scale: 1,
       tap_action: "more-info",
       ...config,
+      style: requestedStyle,
       integer_digits: this._int(config.integer_digits, 1, 24, 8),
       decimals: this._int(config.decimals, 0, 8, 0),
       screw_size: this._num(config.screw_size, 12, 56, 28),
