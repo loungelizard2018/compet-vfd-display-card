@@ -14,19 +14,28 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Verify version matches tag
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           grep -Fq 'const COMPET_VFD_VERSION = "'"${VERSION}"'";' compet-vfd-display-card.js
-      - name: Validate JavaScript
-        run: find . -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Validate JavaScript and HACS manifest
+        shell: bash
+        run: |
+          find . -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check
+          python -m json.tool hacs.json > /dev/null
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           gh release create "$GITHUB_REF_NAME" \
             ./*.js \
+            ./brand/icon.png \
+            ./brand/icon@2x.png \
             --verify-tag \
             --generate-notes \
             --title "$GITHUB_REF_NAME"
