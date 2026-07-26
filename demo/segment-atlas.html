@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COMPET 18 shared segment atlas</title>
+<style>
+  :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#070b09;color:#e8f3eb}
+  body{margin:0;padding:28px;background:radial-gradient(circle at 50% 0,#13231a,#070b09 55%)}
+  h1{margin:0 0 8px;font-size:26px} p{color:#9fb4a6;max-width:980px}
+  section{margin:28px 0;padding:18px;border:1px solid #26362c;border-radius:14px;background:#0c120f}
+  h2{font-size:16px;margin:0 0 14px;color:#b9cabf;text-transform:uppercase;letter-spacing:.12em}
+  .row{display:flex;gap:12px;align-items:flex-start;overflow-x:auto;padding:8px}
+  .cell{flex:0 0 112px;text-align:center}
+  .tube{width:108px;height:178px;border-radius:20px;background:linear-gradient(90deg,#07110c,#030704 50%,#0b1710);border:1px solid #35473b;box-shadow:inset 0 0 20px #000,0 10px 20px #0008;position:relative}
+  .tube svg{width:100%;height:100%;overflow:visible}.label{font-weight:700;margin-top:8px}.name{font-size:11px;color:#85978b;min-height:28px}
+  .mesh{opacity:.18}.wire{stroke:#8e896d;stroke-width:.8;opacity:.45}.ghost{fill:none;stroke:#14341f;stroke-width:3.6;stroke-linecap:butt;opacity:.55}
+  .active{fill:none;stroke:#26ff73;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;filter:drop-shadow(0 0 4px #20f56b)}
+  .alt{stroke-linecap:round}.dot{fill:#d8ffe3;filter:drop-shadow(0 0 1px #20f56b)}
+  .endpoint{fill:#fff;stroke:#000;stroke-width:.5}.start{fill:#3ad7ff}.end{fill:#ff5577}
+  .debug-letter{font:bold 7px monospace;fill:#fff;paint-order:stroke;stroke:#000;stroke-width:2px}
+  .legend{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:8px;font-size:13px}.swatch{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:7px}
+</style>
+</head>
+<body>
+<h1>SHARP COMPET 18 — canonical shared segment atlas</h1>
+<p>Branch-only visual check. The original row is composed from exactly eight immutable electrode objects A–H. No per-digit transform or replacement path is used.</p>
+<section><h2>1 — Individual physical segments A–H</h2><div id="segments" class="row"></div></section>
+<section><h2>2 — Original shared-segment numerals 0123456789</h2><div id="original" class="row"></div></section>
+<section><h2>3 — Previous alternative numerals</h2><div id="alternative" class="row"></div></section>
+<section><h2>4 — Segment identity colours</h2><div id="coloured" class="row"></div><div id="legend" class="legend"></div></section>
+<script type="module">
+import { ORIGINAL_SEGMENTS, ORIGINAL_DIGIT_SEGMENTS } from "../compet-vfd-segments.js";
+import { ALTERNATIVE_GLYPHS } from "../compet-vfd-glyphs.js";
+
+const NS="http://www.w3.org/2000/svg";
+const colours={A:"#ff4358",B:"#ff9e2f",C:"#ffe04b",D:"#3bdb6f",E:"#36dce7",F:"#4f8cff",G:"#a767ff",H:"#ff54c8"};
+const svgEl=(name,attrs={})=>{const el=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el};
+function points(path,fractions){const temp=svgEl("path",{d:path});const svg=svgEl("svg");svg.append(temp);document.body.append(svg);const length=temp.getTotalLength();const result=fractions.map(f=>temp.getPointAtLength(f*length));svg.remove();return result}
+function baseTube(){
+  const wrap=document.createElement("div");wrap.className="cell";
+  const tube=document.createElement("div");tube.className="tube";
+  const svg=svgEl("svg",{viewBox:"0 0 80 132"});
+  const defs=svgEl("defs");
+  const pat=svgEl("pattern",{id:"mesh-"+Math.random().toString(36).slice(2),width:"9",height:"7.8",patternUnits:"userSpaceOnUse"});
+  pat.append(svgEl("path",{d:"M2.25 0L6.75 0L9 3.9L6.75 7.8L2.25 7.8L0 3.9Z",fill:"none",stroke:"#89b497","stroke-width":".45"}));defs.append(pat);svg.append(defs);
+  svg.append(svgEl("rect",{x:"7",y:"3",width:"66",height:"126",rx:"13",fill:"#020805",stroke:"#789081","stroke-opacity":".32"}));
+  const mesh=svgEl("rect",{x:"9",y:"10",width:"62",height:"112",rx:"9",fill:`url(#${pat.id})`,class:"mesh"});svg.append(mesh);
+  svg.append(svgEl("path",{d:"M40 8V121",class:"wire"}));tube.append(svg);wrap.append(tube);return {wrap,tube,svg};
+}
+function addSegment(svg,segment,{colour="#26ff73",debug=false,showEnds=false,alternative=false}={}){
+  const path=svgEl("path",{d:segment.d||segment.path,class:`active ${alternative?"alt":""}`,stroke:colour,"stroke-width":segment.width||4});svg.append(path);
+  const fractions=segment.dotFractions||Array.from({length:Math.max(10,Math.floor(path.getTotalLength()/3))},(_,i,a)=>.04+i*.92/(a.length-1));
+  for(const point of points(segment.d||segment.path,fractions)){svg.append(svgEl("circle",{cx:point.x,cy:point.y,r:".62",class:"dot"}))}
+  if(showEnds){const length=path.getTotalLength();const a=path.getPointAtLength(0),b=path.getPointAtLength(length);svg.append(svgEl("circle",{cx:a.x,cy:a.y,r:"2",class:"endpoint start"}));svg.append(svgEl("circle",{cx:b.x,cy:b.y,r:"2",class:"endpoint end"}))}
+  if(debug){const mid=path.getPointAtLength(path.getTotalLength()/2);const t=svgEl("text",{x:mid.x+2,y:mid.y-2,class:"debug-letter"});t.textContent=segment.id;svg.append(t)}
+}
+function labelCell(wrap,title,name=""){const l=document.createElement("div");l.className="label";l.textContent=title;wrap.append(l);const n=document.createElement("div");n.className="name";n.textContent=name;wrap.append(n)}
+for(const [id,segment] of Object.entries(ORIGINAL_SEGMENTS)){const {wrap,svg}=baseTube();for(const ghost of Object.values(ORIGINAL_SEGMENTS))svg.append(svgEl("path",{d:ghost.path,class:"ghost"}));addSegment(svg,segment,{showEnds:true});labelCell(wrap,id,segment.name);segments.append(wrap)}
+for(const digit of "0123456789"){const {wrap,svg}=baseTube();for(const segment of Object.values(ORIGINAL_SEGMENTS))svg.append(svgEl("path",{d:segment.path,class:"ghost"}));for(const id of ORIGINAL_DIGIT_SEGMENTS[digit])addSegment(svg,ORIGINAL_SEGMENTS[id]);labelCell(wrap,digit,ORIGINAL_DIGIT_SEGMENTS[digit].join(" + "));original.append(wrap)}
+for(const digit of "0123456789"){const {wrap,svg}=baseTube();for(const segment of ALTERNATIVE_GLYPHS[digit])addSegment(svg,segment,{alternative:true});labelCell(wrap,digit,"alternative");alternative.append(wrap)}
+for(const digit of "0123456789"){const {wrap,svg}=baseTube();for(const id of ORIGINAL_DIGIT_SEGMENTS[digit])addSegment(svg,ORIGINAL_SEGMENTS[id],{colour:colours[id],debug:true});labelCell(wrap,digit,ORIGINAL_DIGIT_SEGMENTS[digit].join(" + "));coloured.append(wrap)}
+for(const [id,segment] of Object.entries(ORIGINAL_SEGMENTS)){const item=document.createElement("div");item.innerHTML=`<span class="swatch" style="background:${colours[id]}"></span><b>${id}</b> — ${segment.name}`;legend.append(item)}
+</script>
+</body>
+</html>
