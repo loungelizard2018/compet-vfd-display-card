@@ -6,27 +6,76 @@
 
 A photorealistic numeric display card for Home Assistant inspired by the individually switched glass-cylinder display of the 1969 SHARP COMPET 18 calculator.
 
-Version **0.3.1** reconstructs the unusual COMPET numeral geometry from the supplied photographic reference. The default glyphs are no longer smooth freehand strokes: each numeral is assembled from separately cut physical electrode segments with flat ends and explicitly sampled phosphor dots.
+> **Experimental visual-review branch:** `fix/true-compet-shared-segments`
+>
+> This branch does not contain a new release or version bump. It replaces the incorrect per-digit original paths with one canonical set of exactly eight shared physical electrode segments. It must not be merged or released until the visual atlas is approved.
 
-## Features
+## True shared-segment model
 
-- Original COMPET 18 numeral style as the default
-- Previous smoother glyph set retained as `style: alternative`
-- Individually cut electrode segments instead of a generic seven-segment font
-- Explicit phosphor dots distributed uniformly along actual SVG path length
-- Independently configurable glow, phosphor, inactive-electrode and marker colours
-- External faceted red decimal marker between integer and fractional tubes
-- Photorealistic glass cylinders, mesh, support wires and inactive electrodes
-- Gauge-black housing matching the Analog Gauge Card and Mechanical Counter Card
-- Optional cross-head screws and responsive fitting
+The original style is now defined by these eight immutable objects:
+
+| ID | Name | Source numeral |
+|---|---|---:|
+| `A` | upper-left-return | `4` |
+| `B` | upper-roof | `2` |
+| `C` | upper-right-hook | `2` |
+| `D` | lower-left-sweep | `2` |
+| `E` | lower-base | `2` |
+| `F` | lower-right-return | `3` |
+| `G` | one-upper-slash | `1` |
+| `H` | one-lower-slash | `1` |
+
+No original numeral owns a private path and no segment is transformed for a particular digit. The binding matrix is fixed:
+
+```text
+0 = D E F
+1 = G H
+2 = B C D E
+3 = B C E F
+4 = A G H
+5 = A B E F
+6 = C D E F
+7 = B C H
+8 = A B C D E F
+9 = A B C H
+```
+
+The previous smoother glyph set remains available unchanged as `style: alternative`.
+
+## Branch verification
+
+Run:
+
+```bash
+npm run verify
+python3 -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000/demo/segment-atlas.html
+http://localhost:8000/demo/reference-overlay.html
+```
+
+The atlas contains:
+
+- each physical segment A–H separately with cut endpoints,
+- `0123456789` assembled from the shared original objects,
+- the unchanged alternative row,
+- a colour-coded identity view proving reuse.
+
+The overlay tool accepts the supplied photograph locally, provides whole-cell position/scale/rotation controls, segment toggles, opacity controls and PNG export. It never performs OCR and never transforms an individual segment.
 
 ## HACS installation
+
+The stable release remains available through HACS:
 
 1. Open **HACS → Dashboard**.
 2. Open the three-dot menu and choose **Custom repositories**.
 3. Add `https://github.com/loungelizard2018/compet-vfd-display-card`.
 4. Select **Dashboard** as the category.
-5. Install the latest release and reload the frontend.
+5. Install the latest published release and reload the frontend.
 
 Resource path:
 
@@ -34,9 +83,7 @@ Resource path:
 /hacsfiles/compet-vfd-display-card/compet-vfd-display-card.js
 ```
 
-## Original COMPET style
-
-`style: original` is the default and may be omitted.
+## Original-style YAML
 
 ```yaml
 type: custom:compet-vfd-display-card
@@ -74,7 +121,7 @@ allow_upscale: false
 max_fit_scale: 1
 ```
 
-## Previous alternative glyph style
+## Alternative style
 
 ```yaml
 type: custom:compet-vfd-display-card
@@ -86,26 +133,7 @@ label: RAM USAGE
 unit: "%"
 ```
 
-## Colour example
-
-```yaml
-type: custom:compet-vfd-display-card
-entity: sensor.bigpool_cpu_temperature
-integer_digits: 3
-decimals: 1
-style: original
-label: CPU TEMPERATURE
-unit: °C
-
-glow_color: "#ffad32"
-phosphor_color: "#fff0bd"
-inactive_color: "rgba(255,173,50,0.045)"
-decimal_marker_color: "#d9362e"
-```
-
-## Static glyph test
-
-The following value displays `0123456789` because the card reserves ten integer positions and adds the leading zero:
+## Static digit test
 
 ```yaml
 type: custom:compet-vfd-display-card
@@ -114,7 +142,7 @@ integer_digits: 10
 decimals: 0
 leading_zeroes: true
 style: original
-label: ORIGINAL 0–9
+label: SHARED SEGMENTS 0–9
 unit: ""
 show_unit: false
 ```
@@ -140,20 +168,6 @@ show_unit: false
 | `fit_to_card` | `true` | Fit the instrument to its column |
 
 `entity` is not required when `value` is configured.
-
-## Development comparison
-
-Open `demo/glyph-comparison.html` from a local web server. It displays:
-
-- the reconstructed original row `0123456789`
-- the previous alternative row
-- enlarged views of `0`, `4`, `6`, `8` and `9`
-- segment IDs and cut boundaries
-- an optional local photographic overlay selected through a file input
-
-## Accuracy
-
-The original-style geometry is reconstructed from an angled photograph of the calculator. Perspective and cell placement were analysed before the segment paths were normalised to an `80 × 132` local coordinate system. Reference fidelity takes precedence over mathematical symmetry.
 
 ## Licence
 
