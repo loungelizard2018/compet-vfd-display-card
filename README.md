@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brand/icon.svg" width="150" alt="COMPET VFD Display Card icon">
+  <img src="https://raw.githubusercontent.com/loungelizard2018/compet-vfd-display-card/main/brand/icon.png" width="150" alt="COMPET VFD Display Card icon">
 </p>
 
 # COMPET VFD Display Card
@@ -35,15 +35,68 @@ The resource path is:
 /hacsfiles/compet-vfd-display-card/compet-vfd-display-card.js
 ```
 
-## Minimal configuration
+## Copy-paste example
+
+This static configuration is useful for checking the design before connecting a sensor:
 
 ```yaml
 type: custom:compet-vfd-display-card
-entity: sensor.energy_total
-integer_digits: 8
+value: 1234567890.5
+
+integer_digits: 10
 decimals: 1
-unit: kWh
-label: ENERGY
+leading_zeroes: true
+reserve_sign_slot: false
+
+label: COMPET DISPLAY
+unit: ""
+show_label: true
+show_unit: false
+
+frame: gauge_black
+screws: true
+screw_size: 30
+transparent_card: true
+
+glow_color: "#20f56b"
+inactive_color: "rgba(32,245,107,0.035)"
+show_mesh: true
+
+tube_width: 64
+tube_height: 124
+tube_gap: 8
+
+decimal_marker: true
+decimal_marker_color: "#e33b32"
+
+show_red_markers: false
+marker_positions: []
+
+animation: true
+animation_duration: 190
+
+fit_to_card: true
+allow_upscale: false
+max_fit_scale: 1
+scale: 1
+
+tap_action: none
+```
+
+## Sensor example
+
+```yaml
+type: custom:compet-vfd-display-card
+entity: sensor.bigpool_cpu_temperature
+integer_digits: 3
+decimals: 1
+leading_zeroes: false
+label: CPU TEMPERATURE
+unit: °C
+frame: gauge_black
+screws: true
+decimal_marker: true
+fit_to_card: true
 ```
 
 ## Full reference configuration
@@ -95,17 +148,6 @@ tap_action: more-info
 
 The decimal marker does not consume a display tube. It is placed outside the glass tubes between the final integer digit and the first decimal digit.
 
-## Static design preview
-
-```yaml
-type: custom:compet-vfd-display-card
-value: 1234567890.5
-integer_digits: 10
-decimals: 1
-leading_zeroes: true
-label: COMPET DISPLAY
-```
-
 ## Main options
 
 | Option | Default | Description |
@@ -130,7 +172,9 @@ label: COMPET DISPLAY
 
 ## Branding
 
-The repository includes a matching COMPET-style display icon in `brand/icon.svg`. PNG variants are generated for releases. HACS uses its generic Dashboard icon for Dashboard/plugin repositories; custom brand icons in the HACS repository list are supported for integration repositories, not Dashboard cards.
+The repository includes matching COMPET-style artwork in `brand/icon.svg`, `brand/icon.png` and `brand/icon@2x.png`. The absolute PNG URL above is used so the icon also renders inside the HACS README view.
+
+HACS currently uses its generic Dashboard-card symbol for plugin repositories. Repository-specific brand icons are displayed for Home Assistant integrations, not for Dashboard cards.
 
 ## Accuracy
 
