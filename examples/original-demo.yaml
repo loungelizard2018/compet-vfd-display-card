@@ -1,0 +1,21 @@
+type: custom:compet-vfd-display-card
+entity: sensor.bigpool_ram_usage
+integer_digits: 3
+decimals: 1
+leading_zeroes: false
+style: original
+label: RAM USAGE
+unit: "%"
+show_label: true
+show_unit: true
+frame: gauge_black
+screws: true
+screw_size: 30
+glow_color: "#20f56b"
+phosphor_color: "#d8ffe3"
+inactive_color: "rgba(32,245,107,0.035)"
+decimal_marker: true
+decimal_marker_color: "#d9362e"
+fit_to_card: true
+allow_upscale: false
+max_fit_scale: 1
