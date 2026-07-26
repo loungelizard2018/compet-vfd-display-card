@@ -1,102 +1,12 @@
+import {
+  ORIGINAL_FIELD_SEGMENTS,
+  ORIGINAL_SEGMENTS,
+  ORIGINAL_DIGIT_SEGMENTS,
+  originalSegmentsFor
+} from "./compet-vfd-segments.js";
+
 const segment = (id, d, width = 4.0, startInset = 1.0, endInset = 1.0) =>
-  Object.freeze({ id, d, width, startInset, endInset });
-
-/**
- * SHARP COMPET 18 reference reconstruction.
- *
- * The original hardware did not draw a smooth font. Each numeral was made
- * from separately switched phosphor electrodes. The paths below therefore
- * describe independent physical segment centre-lines. Rendering uses flat,
- * cut ends and explicitly sampled phosphor dots rather than a dashed stroke.
- */
-export const ORIGINAL_GLYPHS = Object.freeze({
-  "0": Object.freeze([
-    segment("0-upper-left", "M29 75 C23 77 19 83 18 90", 3.8),
-    segment("0-lower-left", "M18 92 C18 100 25 105 34 107", 3.9),
-    segment("0-bottom-right", "M36 107 C45 108 53 104 57 98", 3.9),
-    segment("0-upper-right", "M58 96 C61 87 58 79 51 76", 3.8),
-    segment("0-top", "M49 75 C42 72 35 72 30 74", 3.8)
-  ]),
-
-  "1": Object.freeze([
-    segment("1-upper", "M45 18 C42 28 39 39 36 51", 3.7, 1.0, 1.2),
-    segment("1-lower", "M32 66 C29 78 25 95 21 112", 3.7, 1.2, 1.0)
-  ]),
-
-  "2": Object.freeze([
-    segment("2-top", "M22 24 C31 19 43 19 52 22", 3.9),
-    segment("2-upper-right", "M54 23 C60 27 59 34 55 41", 3.9),
-    segment("2-diagonal", "M53 43 C48 51 41 57 35 63", 3.9),
-    segment("2-lower-left", "M33 65 C25 73 18 82 17 90", 3.9),
-    segment("2-bottom", "M18 93 C25 100 42 101 56 96", 4.0)
-  ]),
-
-  "3": Object.freeze([
-    segment("3-top", "M22 24 C31 19 43 19 52 22", 3.9),
-    segment("3-upper-right", "M54 23 C60 27 59 35 54 42", 3.9),
-    segment("3-waist-in", "M53 44 C49 51 44 55 38 59", 3.8),
-    segment("3-waist-out", "M39 61 C49 59 56 63 58 72", 3.9),
-    segment("3-lower-right", "M59 74 C61 85 54 97 44 103", 4.0),
-    segment("3-bottom", "M42 104 C33 108 24 106 18 101", 4.0)
-  ]),
-
-  "4": Object.freeze([
-    segment("4-upper-left", "M24 31 C21 42 20 52 22 59", 3.9),
-    segment("4-bowl", "M23 61 C29 65 37 65 43 61", 3.9),
-    segment("4-upper-stem", "M45 59 C47 47 49 34 50 21", 3.8),
-    segment("4-crossbar", "M20 66 C31 66 43 65 55 64", 3.8),
-    segment("4-lower-stem", "M43 71 C41 84 39 99 37 113", 3.8)
-  ]),
-
-  "5": Object.freeze([
-    segment("5-top", "M56 22 C46 20 34 20 24 23", 3.9),
-    segment("5-upper-left", "M23 25 C20 36 19 47 20 56", 3.9),
-    segment("5-middle", "M21 58 C30 56 41 56 49 61", 3.9),
-    segment("5-lower-right", "M51 62 C58 68 58 79 54 90", 4.0),
-    segment("5-bottom", "M52 92 C46 103 32 108 19 103", 4.0)
-  ]),
-
-  "6": Object.freeze([
-    segment("6-upper-hook", "M52 27 C49 37 43 47 36 55", 3.8),
-    segment("6-upper-entry", "M34 58 C27 63 20 72 18 82", 3.9),
-    segment("6-lower-left", "M18 84 C17 95 24 103 34 106", 4.0),
-    segment("6-bottom", "M36 106 C46 107 54 101 57 93", 4.0),
-    segment("6-lower-right", "M58 91 C60 80 55 70 47 65", 4.0),
-    segment("6-loop-close", "M45 64 C37 60 29 64 22 72", 3.9)
-  ]),
-
-  "7": Object.freeze([
-    segment("7-top", "M22 24 C31 19 43 19 52 22", 3.9),
-    segment("7-upper-right", "M54 23 C60 27 59 34 55 41", 3.9),
-    segment("7-diagonal", "M53 43 C48 51 42 57 38 62", 3.8),
-    segment("7-lower", "M32 69 C29 82 25 97 21 112", 3.8)
-  ]),
-
-  "8": Object.freeze([
-    segment("8-upper-left-a", "M39 20 C30 20 23 25 21 34", 3.8),
-    segment("8-upper-left-b", "M21 36 C20 46 27 54 38 59", 3.9),
-    segment("8-upper-right-a", "M41 20 C51 20 57 26 58 35", 3.8),
-    segment("8-upper-right-b", "M58 37 C57 47 51 55 41 59", 3.9),
-    segment("8-lower-left-a", "M38 63 C27 66 21 75 21 86", 4.0),
-    segment("8-lower-left-b", "M21 88 C22 100 29 108 39 109", 4.0),
-    segment("8-lower-right-a", "M42 109 C52 108 59 100 59 88", 4.0),
-    segment("8-lower-right-b", "M59 86 C58 75 52 66 42 63", 4.0)
-  ]),
-
-  "9": Object.freeze([
-    segment("9-upper-left-a", "M39 22 C29 22 22 28 21 38", 3.9),
-    segment("9-upper-left-b", "M21 40 C21 51 28 59 38 63", 3.9),
-    segment("9-upper-right-a", "M41 22 C51 22 57 29 58 39", 3.9),
-    segment("9-upper-right-b", "M58 41 C57 52 51 59 41 63", 3.9),
-    segment("9-loop-close", "M38 64 C31 62 26 58 23 52", 3.8),
-    segment("9-lower", "M45 70 C42 84 38 99 35 113", 3.8)
-  ]),
-
-  "-": Object.freeze([
-    segment("minus", "M24 65 C34 64 46 64 56 65", 3.8)
-  ]),
-  " ": Object.freeze([])
-});
+  Object.freeze({ id, d, path: d, width, startInset, endInset, linecap: "round", dotFractions: null });
 
 // Previous smoother glyph set retained verbatim for style: alternative.
 const ALT = Object.freeze({
@@ -121,19 +31,6 @@ export const ALTERNATIVE_GLYPHS = Object.freeze(Object.fromEntries(
   ])
 ));
 
-/** Faint electrode field visible when a tube is not lit. */
-export const ORIGINAL_FIELD_SEGMENTS = Object.freeze([
-  segment("field-top-left", "M22 24 C31 19 43 19 52 22", 3.4),
-  segment("field-upper-right", "M54 23 C60 28 58 38 52 47", 3.4),
-  segment("field-upper-left", "M24 31 C20 43 20 53 23 61", 3.4),
-  segment("field-middle", "M21 63 C31 65 43 64 55 62", 3.4),
-  segment("field-lower-left", "M31 66 C23 74 18 84 19 94", 3.4),
-  segment("field-lower-right", "M47 65 C57 71 60 82 56 93", 3.4),
-  segment("field-bottom", "M20 101 C31 108 45 108 56 99", 3.4),
-  segment("field-centre-upper", "M49 20 C47 34 44 48 41 60", 3.4),
-  segment("field-centre-lower", "M42 69 C40 84 37 99 34 113", 3.4)
-]);
-
 export const ALTERNATIVE_FIELD_SEGMENTS = Object.freeze([
   segment("alternative-field-top", "M23 18 C34 13 51 13 62 18", 4.2),
   segment("alternative-field-upper-right", "M63 22 C66 36 65 48 61 58", 4.2),
@@ -144,11 +41,13 @@ export const ALTERNATIVE_FIELD_SEGMENTS = Object.freeze([
   segment("alternative-field-middle", "M20 64 C31 60 49 60 60 64", 4.2)
 ]);
 
+export { ORIGINAL_SEGMENTS, ORIGINAL_DIGIT_SEGMENTS, ORIGINAL_FIELD_SEGMENTS };
+
 export function glyphSegments(style = "original", character = " ") {
-  const source = String(style).toLowerCase() === "alternative"
-    ? ALTERNATIVE_GLYPHS
-    : ORIGINAL_GLYPHS;
-  return source[character] || source[" "];
+  if (String(style).toLowerCase() === "alternative") {
+    return ALTERNATIVE_GLYPHS[character] || ALTERNATIVE_GLYPHS[" "];
+  }
+  return originalSegmentsFor(character);
 }
 
 export function fieldSegments(style = "original") {
