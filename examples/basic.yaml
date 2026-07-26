@@ -1,0 +1,11 @@
+type: custom:compet-vfd-display-card
+entity: sensor.bigpool_cpu_temperature
+integer_digits: 3
+decimals: 1
+leading_zeroes: false
+label: CPU TEMPERATURE
+unit: °C
+frame: gauge_black
+screws: true
+decimal_marker: true
+fit_to_card: true
