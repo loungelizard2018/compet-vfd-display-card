@@ -1,0 +1,9 @@
+{
+  "name": "compet-vfd-display-card",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check compet-vfd-display-card.js"
+  }
+}
