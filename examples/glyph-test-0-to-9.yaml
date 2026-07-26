@@ -1,0 +1,20 @@
+type: custom:compet-vfd-display-card
+value: 123456789
+integer_digits: 10
+decimals: 0
+leading_zeroes: true
+style: original
+label: ORIGINAL COMPET 18 — 0 1 2 3 4 5 6 7 8 9
+unit: ""
+show_unit: false
+frame: gauge_black
+screws: true
+glow_color: "#20f56b"
+phosphor_color: "#d8ffe3"
+show_mesh: true
+tube_width: 64
+tube_height: 124
+tube_gap: 8
+fit_to_card: true
+allow_upscale: false
+max_fit_scale: 1
