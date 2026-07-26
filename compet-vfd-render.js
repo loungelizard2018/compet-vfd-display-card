@@ -45,13 +45,13 @@ export const renderMethods = {
     const id = `cvfd-${index}`;
     const style = this._config.style === "alternative" ? "alternative" : "original";
     const ghosts = fieldSegments(style).map((s) =>
-      `<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}"/>`
+      `<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}" data-segment-id="${this._esc(s.id)}"/>`
     ).join("");
     const active = glyphSegments(style, character).map((s) => `
-      <g class="physical-segment" data-segment-id="${this._esc(s.id)}">
+      <g class="physical-segment" data-segment-id="${this._esc(s.id)}" data-segment-name="${this._esc(s.name || s.id)}">
         <path class="segment-glow" d="${s.d}" style="--segment-width:${s.width};--segment-glow-width:${(s.width + 2.8).toFixed(2)}" filter="url(#${id}-glow)"/>
         <path class="segment-band" d="${s.d}" style="--segment-width:${s.width}"/>
-        <path class="segment-guide" d="${s.d}" data-start-inset="${s.startInset}" data-end-inset="${s.endInset}"/>
+        <path class="segment-guide" d="${s.d}" data-start-inset="${s.startInset}" data-end-inset="${s.endInset}" data-dot-fractions="${Array.isArray(s.dotFractions) ? s.dotFractions.join(",") : ""}"/>
         <g class="phosphor-dots"></g>
       </g>`).join("");
 
@@ -82,23 +82,37 @@ export const renderMethods = {
       let length;
       try { length = guide.getTotalLength(); } catch { return; }
       if (!Number.isFinite(length) || length <= 0) return;
-      const start = Number(guide.dataset.startInset || 1.0);
-      const end = Number(guide.dataset.endInset || 1.0);
-      const usable = Math.max(0, length - start - end);
-      const spacing = this._config.style === "alternative" ? 2.75 : 2.55;
-      const count = Math.max(1, Math.floor(usable / spacing));
-      const actualSpacing = count > 1 ? usable / (count - 1) : 0;
-      for (let i = 0; i < count; i += 1) {
-        const distance = Math.min(length - end, start + i * actualSpacing);
+
+      const storedFractions = String(guide.dataset.dotFractions || "")
+        .split(",")
+        .map(Number)
+        .filter((value) => Number.isFinite(value) && value >= 0 && value <= 1);
+
+      let distances;
+      if (storedFractions.length) {
+        distances = storedFractions.map((fraction) => fraction * length);
+      } else {
+        const start = Number(guide.dataset.startInset || 1.0);
+        const end = Number(guide.dataset.endInset || 1.0);
+        const usable = Math.max(0, length - start - end);
+        const spacing = 2.75;
+        const count = Math.max(1, Math.floor(usable / spacing));
+        const actualSpacing = count > 1 ? usable / (count - 1) : 0;
+        distances = Array.from({ length: count }, (_, index) =>
+          Math.min(length - end, start + index * actualSpacing)
+        );
+      }
+
+      distances.forEach((distance, index) => {
         const point = guide.getPointAtLength(distance);
         const circle = document.createElementNS(SVG_NS, "circle");
         circle.setAttribute("cx", point.x.toFixed(3));
         circle.setAttribute("cy", point.y.toFixed(3));
-        circle.setAttribute("r", (i % 5 === 0 ? 0.69 : 0.62).toString());
+        circle.setAttribute("r", (index % 5 === 0 ? 0.69 : 0.62).toString());
         circle.setAttribute("class", "phosphor-dot");
-        circle.style.opacity = (0.89 + ((i * 17) % 8) / 100).toFixed(2);
+        circle.style.opacity = (0.89 + ((index * 17) % 8) / 100).toFixed(2);
         dots.appendChild(circle);
-      }
+      });
     });
   },
 
