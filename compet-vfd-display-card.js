@@ -1,17 +1,30 @@
-/** COMPET VFD Display Card for Home Assistant - Version 0.3.0 */
-import { CompetVfdDisplayCard } from "./compet-vfd-card.js?v=0.3.0";
-const COMPET_VFD_VERSION = "0.3.0";
+/** COMPET VFD Display Card for Home Assistant - Version 0.3.1 */
+import { CompetVfdDisplayCard } from "./compet-vfd-card.js?v=0.3.1";
+const COMPET_VFD_VERSION = "0.3.1";
 
 const inheritedStyles = CompetVfdDisplayCard.prototype._styles;
 CompetVfdDisplayCard.prototype._styles = function () {
   return inheritedStyles.call(this) + String.raw`
-    .tube.original .glyph{stroke-width:3.75;opacity:.9}
-    .tube.original .phosphor{stroke-width:1.42;stroke-dasharray:.1 2.45;opacity:.98}
-    .tube.original .ghost{stroke-width:3.5;opacity:.42}
-    .decimal-marker-wrap{position:absolute;z-index:9;bottom:calc(1px*var(--s));width:calc(18px*var(--s));height:calc(25px*var(--s));transform:translateX(-50%);filter:drop-shadow(0 calc(2px*var(--s)) calc(2px*var(--s)) rgba(0,0,0,.9))}
-    .decimal-marker-wrap .decimal-marker{position:absolute;inset:0;display:block;width:100%;height:100%;transform:none;clip-path:polygon(50% 0,82% 30%,72% 82%,50% 100%,27% 82%,18% 30%);background:linear-gradient(90deg,#64100c 0%,#aa211a 23%,var(--marker) 48%,#ff6b5d 58%,#9c1b15 79%,#5d0b08 100%);box-shadow:inset calc(2px*var(--s)) 0 calc(2px*var(--s)) rgba(255,255,255,.22),inset calc(-2px*var(--s)) 0 calc(3px*var(--s)) rgba(60,0,0,.7)}
-    .decimal-marker-wrap:before{content:"";position:absolute;z-index:2;left:38%;top:8%;width:19%;height:66%;border-radius:50%;background:linear-gradient(180deg,rgba(255,190,180,.75),rgba(255,255,255,.08));filter:blur(calc(.35px*var(--s)));opacity:.7}
-    .decimal-marker-wrap:after{content:"";position:absolute;left:20%;right:20%;bottom:calc(-2px*var(--s));height:calc(4px*var(--s));border-radius:50%;background:rgba(0,0,0,.75);filter:blur(calc(1px*var(--s)))}
+    .ghost-segment,.segment-glow,.segment-band,.segment-guide{fill:none;stroke-linecap:butt;stroke-linejoin:round}
+    .ghost-segment{stroke:var(--off);stroke-width:var(--segment-width);opacity:.48}
+    .segment-glow{stroke:var(--glow);stroke-width:var(--segment-glow-width);opacity:.34}
+    .segment-band{stroke:var(--glow);stroke-width:var(--segment-width);opacity:.86}
+    .segment-guide{stroke:transparent;stroke-width:.1;pointer-events:none}
+    .phosphor-dot{fill:var(--phosphor);filter:drop-shadow(0 0 .7px var(--glow));pointer-events:none}
+    .tube.original .segment-band{opacity:.82}
+    .tube.original .ghost-segment{opacity:.31}
+    .tube.alternative .segment-band{stroke-linecap:round}
+    .tube.alternative .segment-glow{stroke-linecap:round}
+    .tube.switching .segment-band,.tube.switching .segment-glow,.tube.switching .phosphor-dot{animation:sw var(--duration)}
+    .decimal-marker-wrap{position:absolute;z-index:9;bottom:calc(-1px*var(--s));width:calc(17px*var(--s));height:calc(23px*var(--s));transform:translateX(-50%) rotate(-1.5deg);pointer-events:none}
+    .decimal-marker-svg{display:block;width:100%;height:100%;overflow:visible}
+    .marker-shadow{fill:rgba(0,0,0,.75);filter:blur(.75px)}
+    .marker-left{fill:#65100d}
+    .marker-centre{fill:var(--marker)}
+    .marker-right{fill:#ff5f53;opacity:.72}
+    .marker-lower{fill:#8b1712}
+    .marker-highlight{fill:none;stroke:#ffc1ba;stroke-width:1.15;stroke-linecap:round;opacity:.62}
+    .marker-scratch{fill:none;stroke:#6b0b08;stroke-width:.45;stroke-linecap:round;opacity:.42}
   `;
 };
 
