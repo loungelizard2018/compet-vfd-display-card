@@ -1,0 +1,41 @@
+type: custom:compet-vfd-display-card
+value: 1234567890.5
+
+integer_digits: 10
+decimals: 1
+leading_zeroes: true
+reserve_sign_slot: false
+
+label: COMPET DISPLAY
+unit: ""
+show_label: true
+show_unit: false
+
+frame: gauge_black
+screws: true
+screw_size: 30
+transparent_card: true
+
+glow_color: "#20f56b"
+inactive_color: "rgba(32,245,107,0.035)"
+show_mesh: true
+
+tube_width: 64
+tube_height: 124
+tube_gap: 8
+
+decimal_marker: true
+decimal_marker_color: "#e33b32"
+
+show_red_markers: false
+marker_positions: []
+
+animation: true
+animation_duration: 190
+
+fit_to_card: true
+allow_upscale: false
+max_fit_scale: 1
+scale: 1
+
+tap_action: none
