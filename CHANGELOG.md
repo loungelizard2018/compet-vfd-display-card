@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0
+
+- Added a newly reconstructed `original` COMPET 18 glyph set based on the supplied calculator display photograph.
+- Kept the previous numeral geometry as optional `style: alternative`.
+- Made `original` the default style when no style parameter is supplied.
+- Retained configurable phosphor colour through `glow_color`; the default remains the original green.
+- Reworked the external decimal marker with a more dimensional, faceted red plastic appearance.
+
 ## 0.2.1
 
 - Added a versioned GitHub release intended for normal HACS installation instead of the default-branch commit.
