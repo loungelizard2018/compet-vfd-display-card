@@ -8,6 +8,7 @@ export const updateMethods = {
       if (!tube || character === this._last[index]) return;
       tube.outerHTML = this._tube(index, character);
       const replacement = this.shadowRoot.querySelector(`.tube[data-index="${index}"]`);
+      this._populatePhosphor(replacement);
       if (replacement && !initial && this._config.animation !== false) {
         replacement.classList.add("switching");
         setTimeout(() => replacement.classList.remove("switching"), this._config.animation_duration + 30);
