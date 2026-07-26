@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+- Added a versioned GitHub release intended for normal HACS installation instead of the default-branch commit.
+- Fixed the COMPET icon in GitHub and the HACS README view by using the generated PNG asset.
+- Added complete copy-paste and sensor YAML examples.
+- Refreshed JavaScript module cache keys for reliable frontend updates.
+
 ## 0.2.0
 
 - Replaced the generic seven-segment construction with individually drawn curved numeral paths based on the original COMPET 18 display.
