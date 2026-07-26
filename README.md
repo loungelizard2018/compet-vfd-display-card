@@ -4,22 +4,21 @@
 
 # COMPET VFD Display Card
 
-A photorealistic numeric display card for Home Assistant, inspired by the individual segmented glass cylinders used in the 1969 SHARP COMPET 18 calculator.
+A photorealistic numeric display card for Home Assistant inspired by the individually switched glass-cylinder display of the 1969 SHARP COMPET 18 calculator.
 
-The digits are drawn with custom curved paths reconstructed from photographs of the original display. No generic seven-segment font, external JavaScript library, web font or CDN is used.
+Version **0.3.1** reconstructs the unusual COMPET numeral geometry from the supplied photographic reference. The default glyphs are no longer smooth freehand strokes: each numeral is assembled from separately cut physical electrode segments with flat ends and explicitly sampled phosphor dots.
 
 ## Features
 
-- Numeric characters `0–9` and minus sign
-- Individually shaped COMPET-style numerals instead of a modern seven-segment typeface
-- Decimal position indicated by a red external marker between the integer and decimal tubes, as on the original calculator
-- Visible inactive geometry, honeycomb mesh, electrodes, support wires and phosphor dots
-- Configurable green glow and inactive-segment colour
-- Black instrument housing matching the Analog Gauge Card and Mechanical Counter Card
-- Optional black cross-head mounting screws
-- Optional additional red position markers
-- Responsive fitting for Sections, Grid, Masonry and mobile layouts
-- Entity state, entity attribute or static preview value
+- Original COMPET 18 numeral style as the default
+- Previous smoother glyph set retained as `style: alternative`
+- Individually cut electrode segments instead of a generic seven-segment font
+- Explicit phosphor dots distributed uniformly along actual SVG path length
+- Independently configurable glow, phosphor, inactive-electrode and marker colours
+- External faceted red decimal marker between integer and fractional tubes
+- Photorealistic glass cylinders, mesh, support wires and inactive electrodes
+- Gauge-black housing matching the Analog Gauge Card and Mechanical Counter Card
+- Optional cross-head screws and responsive fitting
 
 ## HACS installation
 
@@ -27,92 +26,29 @@ The digits are drawn with custom curved paths reconstructed from photographs of 
 2. Open the three-dot menu and choose **Custom repositories**.
 3. Add `https://github.com/loungelizard2018/compet-vfd-display-card`.
 4. Select **Dashboard** as the category.
-5. Install **COMPET VFD Display Card** and reload the frontend.
+5. Install the latest release and reload the frontend.
 
-The resource path is:
+Resource path:
 
 ```text
 /hacsfiles/compet-vfd-display-card/compet-vfd-display-card.js
 ```
 
-## Copy-paste example
+## Original COMPET style
 
-This static configuration is useful for checking the design before connecting a sensor:
-
-```yaml
-type: custom:compet-vfd-display-card
-value: 1234567890.5
-
-integer_digits: 10
-decimals: 1
-leading_zeroes: true
-reserve_sign_slot: false
-
-label: COMPET DISPLAY
-unit: ""
-show_label: true
-show_unit: false
-
-frame: gauge_black
-screws: true
-screw_size: 30
-transparent_card: true
-
-glow_color: "#20f56b"
-inactive_color: "rgba(32,245,107,0.035)"
-show_mesh: true
-
-tube_width: 64
-tube_height: 124
-tube_gap: 8
-
-decimal_marker: true
-decimal_marker_color: "#e33b32"
-
-show_red_markers: false
-marker_positions: []
-
-animation: true
-animation_duration: 190
-
-fit_to_card: true
-allow_upscale: false
-max_fit_scale: 1
-scale: 1
-
-tap_action: none
-```
-
-## Sensor example
+`style: original` is the default and may be omitted.
 
 ```yaml
 type: custom:compet-vfd-display-card
-entity: sensor.bigpool_cpu_temperature
+entity: sensor.bigpool_ram_usage
+
 integer_digits: 3
 decimals: 1
 leading_zeroes: false
-label: CPU TEMPERATURE
-unit: °C
-frame: gauge_black
-screws: true
-decimal_marker: true
-fit_to_card: true
-```
+style: original
 
-## Full reference configuration
-
-```yaml
-type: custom:compet-vfd-display-card
-entity: sensor.energy_total
-attribute: null
-
-integer_digits: 10
-decimals: 1
-leading_zeroes: true
-reserve_sign_slot: false
-
-label: COMPET 18 NUMERIC DISPLAY
-unit: kWh
+label: RAM USAGE
+unit: "%"
 show_label: true
 show_unit: true
 
@@ -122,6 +58,7 @@ screw_size: 30
 transparent_card: true
 
 glow_color: "#20f56b"
+phosphor_color: "#d8ffe3"
 inactive_color: "rgba(32,245,107,0.035)"
 show_mesh: true
 
@@ -130,55 +67,93 @@ tube_height: 124
 tube_gap: 8
 
 decimal_marker: true
-decimal_marker_color: "#e33b32"
-
-show_red_markers: false
-marker_positions: []
-
-animation: true
-animation_duration: 190
+decimal_marker_color: "#d9362e"
 
 fit_to_card: true
 allow_upscale: false
 max_fit_scale: 1
-scale: 1
-
-tap_action: more-info
 ```
 
-The decimal marker does not consume a display tube. It is placed outside the glass tubes between the final integer digit and the first decimal digit.
+## Previous alternative glyph style
+
+```yaml
+type: custom:compet-vfd-display-card
+entity: sensor.bigpool_ram_usage
+integer_digits: 3
+decimals: 1
+style: alternative
+label: RAM USAGE
+unit: "%"
+```
+
+## Colour example
+
+```yaml
+type: custom:compet-vfd-display-card
+entity: sensor.bigpool_cpu_temperature
+integer_digits: 3
+decimals: 1
+style: original
+label: CPU TEMPERATURE
+unit: °C
+
+glow_color: "#ffad32"
+phosphor_color: "#fff0bd"
+inactive_color: "rgba(255,173,50,0.045)"
+decimal_marker_color: "#d9362e"
+```
+
+## Static glyph test
+
+The following value displays `0123456789` because the card reserves ten integer positions and adds the leading zero:
+
+```yaml
+type: custom:compet-vfd-display-card
+value: 123456789
+integer_digits: 10
+decimals: 0
+leading_zeroes: true
+style: original
+label: ORIGINAL 0–9
+unit: ""
+show_unit: false
+```
 
 ## Main options
 
 | Option | Default | Description |
 |---|---:|---|
 | `entity` | required* | Numeric Home Assistant entity |
-| `attribute` | unset | Numeric attribute instead of the entity state |
-| `value` | unset | Static value for design tests |
-| `integer_digits` | `8` | Number of integer tubes |
-| `decimals` | `0` | Number of decimal tubes |
-| `leading_zeroes` | `false` | Fill unused positions with zeroes |
-| `reserve_sign_slot` | `false` | Always reserve a sign tube |
-| `decimal_marker` | `true` | Show the external red decimal marker |
-| `decimal_marker_color` | `#e33b32` | Colour of the external decimal marker |
+| `value` | unset | Static numeric test value |
+| `attribute` | unset | Numeric entity attribute |
+| `style` | `original` | `original` or `alternative` |
+| `integer_digits` | `8` | Integer display tubes |
+| `decimals` | `0` | Fractional display tubes |
+| `leading_zeroes` | `false` | Fill unused integer positions with zeroes |
+| `glow_color` | `#20f56b` | Active electrode glow |
+| `phosphor_color` | `#d8ffe3` | Sharp phosphor-dot colour |
+| `inactive_color` | green transparent | Inactive electrode field |
+| `decimal_marker` | `true` | External physical decimal marker |
+| `decimal_marker_color` | `#d9362e` | Marker centre colour |
 | `frame` | `gauge_black` | `gauge_black` or `none` |
-| `screws` | `true` | Show four cross-head screws |
-| `glow_color` | `#20f56b` | Active phosphor colour |
-| `show_mesh` | `true` | Show the internal honeycomb mesh |
-| `show_red_markers` | `false` | Show additional selected red index markers |
-| `fit_to_card` | `true` | Fit the complete instrument to its column |
+| `screws` | `true` | Show four mounting screws |
+| `fit_to_card` | `true` | Fit the instrument to its column |
 
 `entity` is not required when `value` is configured.
 
-## Branding
+## Development comparison
 
-The repository includes matching COMPET-style artwork in `brand/icon.svg`, `brand/icon.png` and `brand/icon@2x.png`. The absolute PNG URL above is used so the icon also renders inside the HACS README view.
+Open `demo/glyph-comparison.html` from a local web server. It displays:
 
-HACS currently uses its generic Dashboard-card symbol for plugin repositories. Repository-specific brand icons are displayed for Home Assistant integrations, not for Dashboard cards.
+- the reconstructed original row `0123456789`
+- the previous alternative row
+- enlarged views of `0`, `4`, `6`, `8` and `9`
+- segment IDs and cut boundaries
+- an optional local photographic overlay selected through a file input
 
 ## Accuracy
 
-The display geometry was reconstructed from angled photographs of the original calculator. It intentionally reproduces its narrow, curved and dotted appearance rather than using a modern seven-segment typeface.
+The original-style geometry is reconstructed from an angled photograph of the calculator. Perspective and cell placement were analysed before the segment paths were normalised to an `80 × 132` local coordinate system. Reference fidelity takes precedence over mathematical symmetry.
 
 ## Licence
 
