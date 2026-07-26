@@ -1,7 +1,7 @@
-import { configMethods } from "./compet-vfd-config.js?v=0.2.1";
-import { renderMethods } from "./compet-vfd-render.js?v=0.2.1";
-import { updateMethods } from "./compet-vfd-update.js?v=0.2.1";
-import { utilityMethods } from "./compet-vfd-utils.js?v=0.2.1";
+import { configMethods } from "./compet-vfd-config.js?v=0.3.0";
+import { renderMethods } from "./compet-vfd-render.js?v=0.3.0";
+import { updateMethods } from "./compet-vfd-update.js?v=0.3.0";
+import { utilityMethods } from "./compet-vfd-utils.js?v=0.3.0";
 
 export class CompetVfdDisplayCard extends HTMLElement {
   constructor() {
@@ -21,6 +21,7 @@ export class CompetVfdDisplayCard extends HTMLElement {
       entity: "sensor.example_value",
       integer_digits: 8,
       decimals: 1,
+      style: "original",
       label: "COMPET DISPLAY",
       unit: "",
       screws: true
