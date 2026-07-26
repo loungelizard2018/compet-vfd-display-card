@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1
+
+- Reconstructed the original SHARP COMPET 18 numeral geometry from the supplied photographic reference.
+- Replaced smooth free-form glyph strokes with separately cut physical electrode segments.
+- Added explicit phosphor dots sampled uniformly along each segment path.
+- Preserved the previous smoother glyph set as `style: alternative`.
+- Kept configurable `glow_color`, `phosphor_color`, `inactive_color` and `decimal_marker_color`.
+- Rebuilt the decimal marker as a multi-facet physical component with highlight, wear marks and a contact shadow.
+- Added original-versus-alternative comparison tooling and dedicated YAML examples.
+
 ## 0.3.0
 
 - Added a newly reconstructed `original` COMPET 18 glyph set based on the supplied calculator display photograph.
