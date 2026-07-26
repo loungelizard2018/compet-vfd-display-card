@@ -1,18 +1,23 @@
+<p align="center">
+  <img src="brand/icon.svg" width="150" alt="COMPET VFD Display Card icon">
+</p>
+
 # COMPET VFD Display Card
 
 A photorealistic numeric display card for Home Assistant, inspired by the individual segmented glass cylinders used in the 1969 SHARP COMPET 18 calculator.
 
-The digits are drawn with custom curved segment paths. No generic seven-segment font, external JavaScript library, web font or CDN is used.
+The digits are drawn with custom curved paths reconstructed from photographs of the original display. No generic seven-segment font, external JavaScript library, web font or CDN is used.
 
 ## Features
 
 - Numeric characters `0–9` and minus sign
-- Decimal point or comma in a separate glass cylinder
-- Visible inactive segments, honeycomb mesh, electrodes and phosphor dots
+- Individually shaped COMPET-style numerals instead of a modern seven-segment typeface
+- Decimal position indicated by a red external marker between the integer and decimal tubes, as on the original calculator
+- Visible inactive geometry, honeycomb mesh, electrodes, support wires and phosphor dots
 - Configurable green glow and inactive-segment colour
 - Black instrument housing matching the Analog Gauge Card and Mechanical Counter Card
 - Optional black cross-head mounting screws
-- Optional red position markers
+- Optional additional red position markers
 - Responsive fitting for Sections, Grid, Masonry and mobile layouts
 - Entity state, entity attribute or static preview value
 
@@ -50,7 +55,6 @@ attribute: null
 
 integer_digits: 10
 decimals: 1
-decimal_separator: "."
 leading_zeroes: true
 reserve_sign_slot: false
 
@@ -65,15 +69,18 @@ screw_size: 30
 transparent_card: true
 
 glow_color: "#20f56b"
-inactive_color: "rgba(32,245,107,0.055)"
+inactive_color: "rgba(32,245,107,0.035)"
 show_mesh: true
 
 tube_width: 64
 tube_height: 124
 tube_gap: 8
 
-show_red_markers: true
-marker_positions: [5, 8, 10]
+decimal_marker: true
+decimal_marker_color: "#e33b32"
+
+show_red_markers: false
+marker_positions: []
 
 animation: true
 animation_duration: 190
@@ -86,7 +93,7 @@ scale: 1
 tap_action: more-info
 ```
 
-`marker_positions` is one-based and includes the decimal point or comma cylinder.
+The decimal marker does not consume a display tube. It is placed outside the glass tubes between the final integer digit and the first decimal digit.
 
 ## Static design preview
 
@@ -96,7 +103,7 @@ value: 1234567890.5
 integer_digits: 10
 decimals: 1
 leading_zeroes: true
-label: COMPET 18 NUMERIC DISPLAY
+label: COMPET DISPLAY
 ```
 
 ## Main options
@@ -106,23 +113,28 @@ label: COMPET 18 NUMERIC DISPLAY
 | `entity` | required* | Numeric Home Assistant entity |
 | `attribute` | unset | Numeric attribute instead of the entity state |
 | `value` | unset | Static value for design tests |
-| `integer_digits` | `8` | Number of integer cylinders |
-| `decimals` | `0` | Number of decimal cylinders |
-| `decimal_separator` | `.` | `.` or `,` |
+| `integer_digits` | `8` | Number of integer tubes |
+| `decimals` | `0` | Number of decimal tubes |
 | `leading_zeroes` | `false` | Fill unused positions with zeroes |
-| `reserve_sign_slot` | `false` | Always reserve a sign cylinder |
+| `reserve_sign_slot` | `false` | Always reserve a sign tube |
+| `decimal_marker` | `true` | Show the external red decimal marker |
+| `decimal_marker_color` | `#e33b32` | Colour of the external decimal marker |
 | `frame` | `gauge_black` | `gauge_black` or `none` |
 | `screws` | `true` | Show four cross-head screws |
 | `glow_color` | `#20f56b` | Active phosphor colour |
-| `show_mesh` | `true` | Show internal honeycomb mesh |
-| `show_red_markers` | `false` | Show selected red index markers |
+| `show_mesh` | `true` | Show the internal honeycomb mesh |
+| `show_red_markers` | `false` | Show additional selected red index markers |
 | `fit_to_card` | `true` | Fit the complete instrument to its column |
 
 `entity` is not required when `value` is configured.
 
+## Branding
+
+The repository includes a matching COMPET-style display icon in `brand/icon.svg`. PNG variants are generated for releases. HACS uses its generic Dashboard icon for Dashboard/plugin repositories; custom brand icons in the HACS repository list are supported for integration repositories, not Dashboard cards.
+
 ## Accuracy
 
-The segment geometry was reconstructed from angled photographs of the original display. It intentionally reproduces its narrow, curved and dotted appearance rather than using a modern seven-segment typeface.
+The display geometry was reconstructed from angled photographs of the original calculator. It intentionally reproduces its narrow, curved and dotted appearance rather than using a modern seven-segment typeface.
 
 ## Licence
 
