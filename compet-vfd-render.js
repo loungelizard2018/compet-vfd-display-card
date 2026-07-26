@@ -9,7 +9,12 @@ export const renderMethods = {
     const frameless = ["none", "frameless", "transparent"].includes(String(c.frame).toLowerCase());
     this._observer?.disconnect();
     this.shadowRoot.innerHTML = `
-      <style>${this._styles()}</style>
+      <style>${this._styles()}
+        .decimal-marker-wrap{position:absolute;z-index:9;bottom:calc(1px*var(--s));width:calc(18px*var(--s));height:calc(24px*var(--s));transform:translateX(-50%);filter:drop-shadow(0 calc(2px*var(--s)) calc(2px*var(--s)) rgba(0,0,0,.9))}
+        .decimal-marker-wrap .decimal-marker{position:absolute;inset:0;display:block;clip-path:polygon(50% 0,92% 39%,72% 82%,50% 100%,27% 83%,8% 40%);background:linear-gradient(105deg,#5e0706 0%,#9f1712 25%,var(--marker) 46%,#ff6b61 55%,#a71914 72%,#570605 100%);box-shadow:inset calc(2px*var(--s)) calc(1px*var(--s)) calc(2px*var(--s)) rgba(255,255,255,.26),inset calc(-2px*var(--s)) calc(-2px*var(--s)) calc(3px*var(--s)) rgba(35,0,0,.75)}
+        .decimal-marker-wrap .decimal-marker:before{content:"";position:absolute;left:15%;top:7%;width:38%;height:62%;clip-path:polygon(100% 0,62% 100%,0 49%);background:linear-gradient(145deg,rgba(255,190,184,.7),rgba(255,85,74,.08));opacity:.62}
+        .decimal-marker-wrap .decimal-marker b{position:absolute;left:46%;top:3%;width:2px;height:88%;background:linear-gradient(#ff9c94,rgba(255,255,255,.1),#6b0806);opacity:.45;transform:rotate(2deg)}
+      </style>
       <ha-card class="${c.transparent_card ? "transparent" : ""}">
         <div class="host" role="button" tabindex="0" aria-label="${this._esc(c.label || c.entity || "COMPET display")}">
           <div class="stage"><div class="assembly ${frameless ? "frameless" : "black"}"
@@ -40,28 +45,21 @@ export const renderMethods = {
 
   _tube(index, character) {
     const id = `cvfd-${index}`;
-    const ghostPaths = [
-      "M23 18 C34 13 51 13 62 18","M63 22 C66 36 65 48 61 58","M60 72 C64 86 61 101 54 110",
-      "M53 112 C42 116 29 116 18 111","M16 106 C12 91 13 79 17 68","M19 57 C15 44 16 31 22 21","M20 64 C31 60 49 60 60 64"
-    ];
+    const ghostPaths = ["M23 18 C34 13 51 13 62 18","M63 22 C66 36 65 48 61 58","M60 72 C64 86 61 101 54 110","M53 112 C42 116 29 116 18 111","M16 106 C12 91 13 79 17 68","M19 57 C15 44 16 31 22 21","M20 64 C31 60 49 60 60 64"];
     const ghosts = ghostPaths.map((d) => `<path class="ghost" d="${d}"/>`).join("");
     const selectedGlyphs = glyphPaths(this._config.style);
-    const glyph = (selectedGlyphs[character] || []).map((d) => `<path class="glyph" d="${d}" filter="url(#${id}-glow)"/><path class="phosphor" d="${d}"/>`).join("");
+    const glyph = (selectedGlyphs[character] || []).map((d) => `<path class="glyph" d="${d}" filter="url(#${id}-glow)"/><path class="phosphor" style="stroke:var(--phosphor)" d="${d}"/>`).join("");
     return `<div class="tube ${this._config.style === "alternative" ? "alternative" : "original"}" data-index="${index}" data-character="${this._esc(character)}">
-      <i class="cap top"></i><svg viewBox="0 0 80 132" aria-hidden="true">
-        <defs>
-          <filter id="${id}-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="1.45" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          <pattern id="${id}-mesh" width="9" height="7.8" patternUnits="userSpaceOnUse"><path d="M2.25 0L6.75 0L9 3.9L6.75 7.8L2.25 7.8L0 3.9Z" fill="none" stroke="rgba(165,218,181,.12)" stroke-width=".52"/></pattern>
-          <linearGradient id="${id}-shade"><stop stop-color="rgba(255,255,255,.18)"/><stop offset=".15" stop-color="rgba(255,255,255,.02)"/><stop offset=".85" stop-color="rgba(0,0,0,.03)"/><stop offset="1" stop-color="rgba(255,255,255,.13)"/></linearGradient>
-        </defs>
-        <rect x="7" y="3" width="66" height="126" rx="13" fill="rgba(0,5,2,.28)" stroke="rgba(188,219,197,.20)" stroke-width="1.1"/>
-        <path d="M20 5V13M30 4V12M50 4V12M60 5V13M21 120V129M31 120V130M49 120V130M59 120V129" stroke="#9c8c65" stroke-width="1.2" opacity=".42"/>
-        ${this._config.show_mesh ? `<rect x="9" y="10" width="62" height="112" rx="9" fill="url(#${id}-mesh)"/>` : ""}
-        <g class="ghosts">${ghosts}</g><g class="active-glyph">${glyph}</g><path class="support-wire" d="M40 8V121"/>
-        <rect x="7" y="3" width="66" height="126" rx="13" fill="url(#${id}-shade)" opacity=".48"/>
-        <path d="M17 11C29 7 39 7 49 9" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="1.4" stroke-linecap="round"/>
-      </svg><b class="reflection"></b><i class="cap bottom"></i>
-    </div>`;
+      <i class="cap top"></i><svg viewBox="0 0 80 132" aria-hidden="true"><defs>
+        <filter id="${id}-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="1.45" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <pattern id="${id}-mesh" width="9" height="7.8" patternUnits="userSpaceOnUse"><path d="M2.25 0L6.75 0L9 3.9L6.75 7.8L2.25 7.8L0 3.9Z" fill="none" stroke="rgba(165,218,181,.12)" stroke-width=".52"/></pattern>
+        <linearGradient id="${id}-shade"><stop stop-color="rgba(255,255,255,.18)"/><stop offset=".15" stop-color="rgba(255,255,255,.02)"/><stop offset=".85" stop-color="rgba(0,0,0,.03)"/><stop offset="1" stop-color="rgba(255,255,255,.13)"/></linearGradient>
+      </defs><rect x="7" y="3" width="66" height="126" rx="13" fill="rgba(0,5,2,.28)" stroke="rgba(188,219,197,.20)" stroke-width="1.1"/>
+      <path d="M20 5V13M30 4V12M50 4V12M60 5V13M21 120V129M31 120V130M49 120V130M59 120V129" stroke="#9c8c65" stroke-width="1.2" opacity=".42"/>
+      ${this._config.show_mesh ? `<rect x="9" y="10" width="62" height="112" rx="9" fill="url(#${id}-mesh)"/>` : ""}
+      <g class="ghosts">${ghosts}</g><g class="active-glyph">${glyph}</g><path class="support-wire" d="M40 8V121"/>
+      <rect x="7" y="3" width="66" height="126" rx="13" fill="url(#${id}-shade)" opacity=".48"/><path d="M17 11C29 7 39 7 49 9" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="1.4" stroke-linecap="round"/>
+      </svg><b class="reflection"></b><i class="cap bottom"></i></div>`;
   },
 
   _decimalMarker(boundary) {
