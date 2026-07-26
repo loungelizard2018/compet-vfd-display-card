@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COMPET VFD glyph comparison</title>
+<style>
+  :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#070a09;color:#e8ecea}
+  body{margin:0;padding:24px}.toolbar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+  section{margin:18px 0;padding:18px;border:1px solid #27342d;border-radius:12px;background:#0b110e}
+  .row{display:flex;gap:8px;overflow:auto}.cell{min-width:92px;text-align:center}.cell svg{width:88px;height:145px;background:#001108;border:1px solid #244b31;border-radius:16px}
+  .large{display:flex;gap:20px;flex-wrap:wrap}.large .cell{min-width:180px}.large .cell svg{width:176px;height:290px}
+  .segment{fill:none;stroke:#20f56b;stroke-linecap:butt;stroke-linejoin:round}.segment:hover{stroke:#fff}.id{font-size:9px;fill:#ffcf66}
+  #overlay{max-width:100%;opacity:.48;display:none;margin-top:16px}
+</style>
+</head>
+<body>
+<h1>COMPET VFD glyph comparison</h1>
+<div class="toolbar">
+  <label>Reference overlay: <input id="file" type="file" accept="image/*"></label>
+  <label><input id="ids" type="checkbox"> show segment IDs</label>
+</div>
+<img id="overlay" alt="Local reference overlay">
+<section><h2>Original reconstruction</h2><div class="row" id="original"></div></section>
+<section><h2>Previous alternative</h2><div class="row" id="alternative"></div></section>
+<section><h2>Enlarged critical glyphs</h2><div class="large" id="large"></div></section>
+<script type="module">
+import { ORIGINAL_GLYPHS, ALTERNATIVE_GLYPHS } from "../compet-vfd-glyphs.js?v=0.3.1";
+const NS="http://www.w3.org/2000/svg";
+function cell(character, segments){
+  const box=document.createElement("div"); box.className="cell";
+  const svg=document.createElementNS(NS,"svg"); svg.setAttribute("viewBox","0 0 80 132");
+  for(const s of segments){
+    const p=document.createElementNS(NS,"path"); p.setAttribute("d",s.d); p.setAttribute("class","segment"); p.setAttribute("stroke-width",s.width); p.dataset.id=s.id; svg.appendChild(p);
+    const t=document.createElementNS(NS,"text"); t.setAttribute("class","id"); t.setAttribute("x","4"); t.setAttribute("y",String(10+svg.querySelectorAll("text").length*9)); t.textContent=s.id; t.style.display="none"; svg.appendChild(t);
+  }
+  const label=document.createElement("div"); label.textContent=character; box.append(svg,label); return box;
+}
+for(const ch of "0123456789") document.querySelector("#original").append(cell(ch,ORIGINAL_GLYPHS[ch]));
+for(const ch of "0123456789") document.querySelector("#alternative").append(cell(ch,ALTERNATIVE_GLYPHS[ch]));
+for(const ch of "04689") document.querySelector("#large").append(cell(ch,ORIGINAL_GLYPHS[ch]));
+document.querySelector("#ids").addEventListener("change",e=>document.querySelectorAll(".id").forEach(x=>x.style.display=e.target.checked?"block":"none"));
+document.querySelector("#file").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const img=document.querySelector("#overlay");img.src=URL.createObjectURL(f);img.style.display="block";});
+</script>
+</body>
+</html>
