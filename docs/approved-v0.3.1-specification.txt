@@ -1,1 +1,0 @@
-Approved implementation specification for v0.3.1 is provided in the accompanying project conversation and source reference. This marker records that the COMPET 18 original glyph reconstruction, physical segment cuts, phosphor dots, faceted decimal marker, comparison tooling, documentation, examples, and release validation are the approved scope.
