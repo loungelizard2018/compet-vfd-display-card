@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+- Rebuilt the default `original` glyph set from perspective-corrected photographs of the SHARP COMPET 18 display.
+- Replaced guessed Bézier numerals with one canonical eight-electrode system shared by all digits.
+- Added 48×80 photographic masks with four phosphor levels: off, weak glow, active phosphor and bright core.
+- Preserved the exact segment matrix: `0=DEF`, `1=GH`, `2=BCDE`, `3=BCEF`, `4=AGH`, `5=ABEF`, `6=CDEF`, `7=BCH`, `8=ABCDEF`, `9=ABCH`.
+- Kept the previous smooth glyphs unchanged as `style: alternative`.
+- Added the fine dot-matrix editor and reference-overlay tooling.
+- Retained configurable glow, phosphor, inactive-segment and decimal-marker colours.
+
 ## 0.3.1
 
 - Reconstructed the original SHARP COMPET 18 numeral geometry from the supplied photographic reference.
