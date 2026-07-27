@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Retraced all eight shared COMPET electrodes directly from the perspective-corrected reference digits instead of enlarging the previous coarse masks.
+- Increased the photographic matrix from 48x80 to 72x120 cells.
+- Increased phosphor precision from four to seven intensity levels.
+- Reduced individual dot size and separated edge glow, active phosphor and bright cores more accurately.
+- Preserved the canonical shared segment matrix and the optional `style: alternative`.
+- Added updated mask and registration tests for the precision renderer.
+
 ## 0.4.2
 
 - Fixed the photographic `F` electrode mask length from 3888 to the required 3840 cells.

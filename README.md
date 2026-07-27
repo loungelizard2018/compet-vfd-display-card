@@ -8,7 +8,7 @@ Photorealistic numeric display card for Home Assistant, reconstructed from the i
 
 ## Original COMPET electrode model
 
-The default `original` style is derived from perspective-corrected photographs. It uses exactly eight shared physical electrodes and a fine **48×80 matrix with four phosphor levels** rather than independent hand-drawn numerals.
+The default `original` style is derived from perspective-corrected photographs. It uses exactly eight shared physical electrodes and a fine **72×120 matrix with seven phosphor levels** rather than independent hand-drawn numerals.
 
 | ID | Electrode |
 |---|---|
