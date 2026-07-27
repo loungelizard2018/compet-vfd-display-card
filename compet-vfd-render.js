@@ -44,16 +44,23 @@ export const renderMethods = {
   _tube(index, character) {
     const id = `cvfd-${index}`;
     const style = this._config.style === "alternative" ? "alternative" : "original";
-    const ghosts = fieldSegments(style).map((s) =>
-      `<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}" data-segment-id="${this._esc(s.id)}"/>`
+    const ghosts = fieldSegments(style).map((s) => s.shape
+      ? `<path class="ghost-segment-shape" d="${s.shape}" fill="var(--off)" opacity=".42" data-segment-id="${this._esc(s.id)}"/>`
+      : `<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}" data-segment-id="${this._esc(s.id)}"/>`
     ).join("");
-    const active = glyphSegments(style, character).map((s) => `
-      <g class="physical-segment" data-segment-id="${this._esc(s.id)}" data-segment-name="${this._esc(s.name || s.id)}">
-        <path class="segment-glow" d="${s.d}" style="--segment-width:${s.width};--segment-glow-width:${(s.width + 2.8).toFixed(2)}" filter="url(#${id}-glow)"/>
-        <path class="segment-band" d="${s.d}" style="--segment-width:${s.width}"/>
-        <path class="segment-guide" d="${s.d}" data-start-inset="${s.startInset}" data-end-inset="${s.endInset}" data-dot-fractions="${Array.isArray(s.dotFractions) ? s.dotFractions.join(",") : ""}"/>
+    const active = glyphSegments(style, character).map((s) => {
+      const guide = s.guidePath || s.d;
+      const body = s.shape
+        ? `<path class="segment-glow-shape" d="${s.shape}" fill="var(--glow)" opacity=".34" filter="url(#${id}-glow)"/>
+           <path class="segment-fill-shape" d="${s.shape}" fill="var(--glow)" opacity=".86"/>`
+        : `<path class="segment-glow" d="${s.d}" style="--segment-width:${s.width};--segment-glow-width:${(s.width + 2.8).toFixed(2)}" filter="url(#${id}-glow)"/>
+           <path class="segment-band" d="${s.d}" style="--segment-width:${s.width}"/>`;
+      return `<g class="physical-segment" data-segment-id="${this._esc(s.id)}" data-segment-name="${this._esc(s.name || s.id)}">
+        ${body}
+        <path class="segment-guide" d="${guide}" data-start-inset="${s.startInset}" data-end-inset="${s.endInset}" data-dot-fractions="${Array.isArray(s.dotFractions) ? s.dotFractions.join(",") : ""}"/>
         <g class="phosphor-dots"></g>
-      </g>`).join("");
+      </g>`;
+    }).join("");
 
     return `<div class="tube ${style}" data-index="${index}" data-character="${this._esc(character)}">
       <i class="cap top"></i><svg viewBox="0 0 80 132" aria-hidden="true">
