@@ -18,3 +18,17 @@ test("all digits compose into non-empty precision matrices",()=>{for(const d of 
 test("one uses separate G and H electrodes with a narrow optical gap",()=>{const level=3;const gap=minimumMaskGap(ORIGINAL_SEGMENT_MASKS.G,ORIGINAL_SEGMENT_MASKS.H,level);assert.ok(gap>=0);assert.ok(gap<=12,`G/H gap too large: ${gap}`);const g=activeCellsForSegment("G",ORIGINAL_SEGMENT_MASKS,level),h=activeCellsForSegment("H",ORIGINAL_SEGMENT_MASKS,level);assert.ok(Math.max(...g.map(c=>c.row))<Math.min(...h.map(c=>c.row)))});
 test("alternative glyph set remains available",()=>{assert.deepEqual(Object.keys(ALTERNATIVE_GLYPHS),["0","1","2","3","4","5","6","7","8","9","-"," "]);assert.ok(glyphSegments("alternative","8").length>0)});
 
+
+
+test("F is an independent lower-right electrode in 3, 5, 6 and 8",()=>{
+  const edgeGap=minimumMaskGap(ORIGINAL_SEGMENT_MASKS.E,ORIGINAL_SEGMENT_MASKS.F,1);
+  const activeGap=minimumMaskGap(ORIGINAL_SEGMENT_MASKS.E,ORIGINAL_SEGMENT_MASKS.F,3);
+  assert.ok(edgeGap>=1,`E/F edge masks overlap: ${edgeGap}`);
+  assert.ok(activeGap>=1,`E/F active masks overlap: ${activeGap}`);
+  const f=activeCellsForSegment("F",ORIGINAL_SEGMENT_MASKS,1);
+  assert.ok(Math.max(...f.map(cell=>cell.row))<=100,"F extends below its intended return");
+  for(const digit of ["3","5","6","8"]){
+    assert.ok(ORIGINAL_DIGIT_SEGMENTS[digit].includes("F"),`${digit} does not reuse canonical F`);
+    assert.ok(composeDigitLevels(digit).flat().some(value=>value>=5),`${digit} lost its bright core`);
+  }
+});

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1
+
+- Redrew only the shared lower-right electrode `F`.
+- Removed its broad overlap with shared lower-base electrode `E`.
+- Added a stable dark cell gap at edge and active phosphor levels.
+- Verified unchanged reuse in digits `3`, `5`, `6` and `8`.
+
 ## 0.5.0
 
 - Retraced all eight shared COMPET electrodes directly from the perspective-corrected reference digits instead of enlarging the previous coarse masks.

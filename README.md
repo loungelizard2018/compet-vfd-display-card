@@ -1,3 +1,7 @@
+## Segment F correction in v0.5.1
+
+The canonical lower-right electrode `F` is now an independent return segment with a dark optical gap to the shared lower-base electrode `E`. The same corrected mask is reused without transforms in `3`, `5`, `6` and `8`.
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/loungelizard2018/compet-vfd-display-card/main/brand/icon.png" width="150" alt="COMPET VFD Display Card icon">
 </p>
