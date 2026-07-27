@@ -97,18 +97,18 @@ export const ORIGINAL_SEGMENTS = Object.freeze({
   G: physicalSegment({
     id: "G",
     name: "one-upper-slash",
-    path: "M48.2 17.4 C47.1 22.8 45.6 30.8 43.7 40.5",
+    path: "M48.2 17.4 C46.9 24.0 44.7 36.0 42.0 49.0",
     width: 3.90,
-    dots: 11,
+    dots: 13,
     startInset: 0.95,
     endInset: 1.00
   }),
   H: physicalSegment({
     id: "H",
     name: "one-lower-slash",
-    path: "M37.3 72.2 C35.8 80.1 33.6 91.3 31.4 102.6",
+    path: "M40.3 66.0 C38.5 75.0 35.8 90.5 33.7 106.5",
     width: 3.90,
-    dots: 13,
+    dots: 15,
     startInset: 1.00,
     endInset: 0.95
   })
