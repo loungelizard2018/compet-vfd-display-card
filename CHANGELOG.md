@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2
+
+- Fixed the photographic `F` electrode mask length from 3888 to the required 3840 cells.
+- Prevented the bundle from throwing before `customElements.define()`.
+- Added a runtime registration smoke test for the self-contained HACS bundle.
+
 ## 0.4.1
 
 - Replaced the HACS entry point with a fully self-contained JavaScript bundle.
