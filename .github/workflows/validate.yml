@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Check JavaScript syntax
-        run: node --check compet-vfd-display-card.js
-      - name: Check HACS manifest JSON
-        run: python -m json.tool hacs.json > /dev/null
+      - name: Validate JavaScript, segment matrices and manifest
+        run: |
+          npm run verify
+          python -m json.tool hacs.json > /dev/null
