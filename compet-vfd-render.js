@@ -1,17 +1,19 @@
-import { fieldSegments, glyphSegments, ORIGINAL_DIGIT_SEGMENTS } from "./compet-vfd-glyphs.js?v=0.4.0";
+import { fieldSegments, glyphSegments, ORIGINAL_DIGIT_SEGMENTS } from "./compet-vfd-glyphs.js?v=0.5.2";
 import {
   MATRIX_COLS,
   MATRIX_ROWS,
   ORIGINAL_SEGMENT_MASKS,
   activeCellsForSegment
-} from "./compet-vfd-segment-masks.js?v=0.4.0";
+} from "./compet-vfd-segment-masks.js?v=0.5.2";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
+const GLYPH_SAFE_AREA = Object.freeze({ x: 10, y: 11, width: 60, height: 110 });
+
 function maskCoordinate(row, col) {
   return {
-    x: ((col + 0.5) * 80 / MATRIX_COLS).toFixed(3),
-    y: ((row + 0.5) * 132 / MATRIX_ROWS).toFixed(3)
+    x: (GLYPH_SAFE_AREA.x + ((col + 0.5) * GLYPH_SAFE_AREA.width / MATRIX_COLS)).toFixed(3),
+    y: (GLYPH_SAFE_AREA.y + ((row + 0.5) * GLYPH_SAFE_AREA.height / MATRIX_ROWS)).toFixed(3)
   };
 }
 
@@ -115,6 +117,7 @@ export const renderMethods = {
     return `<div class="tube ${style}" data-index="${index}" data-character="${this._esc(character)}">
       <i class="cap top"></i><svg viewBox="0 0 80 132" aria-hidden="true">
         <defs>
+          <clipPath id="${id}-electrode-clip"><rect x="9" y="10" width="62" height="112" rx="9"/></clipPath>
           <filter id="${id}-glow" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="1.15" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <pattern id="${id}-mesh" width="9" height="7.8" patternUnits="userSpaceOnUse"><path d="M2.25 0L6.75 0L9 3.9L6.75 7.8L2.25 7.8L0 3.9Z" fill="none" stroke="rgba(165,218,181,.12)" stroke-width=".52"/></pattern>
           <linearGradient id="${id}-shade"><stop stop-color="rgba(255,255,255,.18)"/><stop offset=".15" stop-color="rgba(255,255,255,.02)"/><stop offset=".85" stop-color="rgba(0,0,0,.03)"/><stop offset="1" stop-color="rgba(255,255,255,.13)"/></linearGradient>
@@ -122,8 +125,10 @@ export const renderMethods = {
         <rect x="7" y="3" width="66" height="126" rx="13" fill="rgba(0,5,2,.28)" stroke="rgba(188,219,197,.20)" stroke-width="1.1"/>
         <path d="M20 5V13M30 4V12M50 4V12M60 5V13M21 120V129M31 120V130M49 120V130M59 120V129" stroke="#9c8c65" stroke-width="1.2" opacity=".42"/>
         ${this._config.show_mesh ? `<rect x="9" y="10" width="62" height="112" rx="9" fill="url(#${id}-mesh)"/>` : ""}
-        <g class="electrode-field">${ghosts}</g>
-        <g class="active-glyph">${active}</g>
+        <g class="electrode-window" clip-path="url(#${id}-electrode-clip)">
+          <g class="electrode-field">${ghosts}</g>
+          <g class="active-glyph">${active}</g>
+        </g>
         <path class="support-wire" d="M40 8V121"/>
         <rect x="7" y="3" width="66" height="126" rx="13" fill="url(#${id}-shade)" opacity=".48"/>
         <path d="M17 11C29 7 39 7 49 9" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="1.4" stroke-linecap="round"/>

@@ -1,4 +1,4 @@
-## Segment F correction in v0.5.1
+## Segment F correction in v0.5.2
 
 The canonical lower-right electrode `F` is now an independent return segment with a dark optical gap to the shared lower-base electrode `E`. The same corrected mask is reused without transforms in `3`, `5`, `6` and `8`.
 

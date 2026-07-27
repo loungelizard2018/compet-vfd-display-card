@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.2
+
+- Fit the complete original phosphor matrix into a fixed inner-tube safe area.
+- Added an SVG clip path so active phosphor and glow cannot cross the glass boundary.
+- Removed the isolated upper-left remnant from shared lower segment E in 3, 5 and 8.
+- Raised shared L-segment A and separated it from lower slash H in digit 4.
+- Added focused geometry regression tests.
+
 ## 0.5.1
 
 - Redrew only the shared lower-right electrode `F`.
