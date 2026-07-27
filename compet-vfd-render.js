@@ -1,6 +1,58 @@
-import { fieldSegments, glyphSegments } from "./compet-vfd-glyphs.js?v=0.3.1";
+import { fieldSegments, glyphSegments, ORIGINAL_DIGIT_SEGMENTS } from "./compet-vfd-glyphs.js?v=0.4.0";
+import {
+  MATRIX_COLS,
+  MATRIX_ROWS,
+  ORIGINAL_SEGMENT_MASKS,
+  activeCellsForSegment
+} from "./compet-vfd-segment-masks.js?v=0.4.0";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+function maskCoordinate(row, col) {
+  return {
+    x: ((col + 0.5) * 80 / MATRIX_COLS).toFixed(3),
+    y: ((row + 0.5) * 132 / MATRIX_ROWS).toFixed(3)
+  };
+}
+
+function originalGhostField() {
+  const seen = new Map();
+  for (const [id] of Object.entries(ORIGINAL_SEGMENT_MASKS)) {
+    for (const cell of activeCellsForSegment(id)) {
+      const key = `${cell.row}:${cell.col}`;
+      const current = seen.get(key);
+      if (!current || cell.level > current.level) seen.set(key, { ...cell, id });
+    }
+  }
+  return [...seen.values()].map((cell) => {
+    const point = maskCoordinate(cell.row, cell.col);
+    const radius = (0.22 + cell.level * 0.055).toFixed(3);
+    const opacity = (0.18 + cell.level * 0.055).toFixed(2);
+    return `<circle class="mask-ghost" cx="${point.x}" cy="${point.y}" r="${radius}" opacity="${opacity}" data-segment-id="${cell.id}"/>`;
+  }).join("");
+}
+
+function originalActiveGlyph(character, filterId) {
+  const cells = new Map();
+  for (const id of ORIGINAL_DIGIT_SEGMENTS[String(character)] || []) {
+    for (const cell of activeCellsForSegment(id)) {
+      const key = `${cell.row}:${cell.col}`;
+      const current = cells.get(key);
+      if (!current || cell.level > current.level) cells.set(key, { ...cell, id });
+    }
+  }
+  return [...cells.values()].map((cell, index) => {
+    const point = maskCoordinate(cell.row, cell.col);
+    const glowRadius = (0.42 + cell.level * 0.13).toFixed(3);
+    const dotRadius = (0.19 + cell.level * 0.095).toFixed(3);
+    const opacity = (0.48 + cell.level * 0.16).toFixed(2);
+    const coreOpacity = Math.min(1, 0.62 + cell.level * 0.12 + (index % 5) * 0.01).toFixed(2);
+    return `<g class="mask-cell level-${cell.level}" data-segment-id="${cell.id}">
+      <circle class="mask-glow" cx="${point.x}" cy="${point.y}" r="${glowRadius}" opacity="${opacity}" filter="url(#${filterId}-glow)"/>
+      <circle class="mask-dot" cx="${point.x}" cy="${point.y}" r="${dotRadius}" opacity="${coreOpacity}"/>
+    </g>`;
+  }).join("");
+}
 
 export const renderMethods = {
   _render() {
@@ -44,28 +96,26 @@ export const renderMethods = {
   _tube(index, character) {
     const id = `cvfd-${index}`;
     const style = this._config.style === "alternative" ? "alternative" : "original";
-    const ghosts = fieldSegments(style).map((s) => s.shape
-      ? `<path class="ghost-segment-shape" d="${s.shape}" fill="var(--off)" opacity=".42" data-segment-id="${this._esc(s.id)}"/>`
-      : `<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}" data-segment-id="${this._esc(s.id)}"/>`
-    ).join("");
-    const active = glyphSegments(style, character).map((s) => {
-      const guide = s.guidePath || s.d;
-      const body = s.shape
-        ? `<path class="segment-glow-shape" d="${s.shape}" fill="var(--glow)" opacity=".34" filter="url(#${id}-glow)"/>
-           <path class="segment-fill-shape" d="${s.shape}" fill="var(--glow)" opacity=".86"/>`
-        : `<path class="segment-glow" d="${s.d}" style="--segment-width:${s.width};--segment-glow-width:${(s.width + 2.8).toFixed(2)}" filter="url(#${id}-glow)"/>
-           <path class="segment-band" d="${s.d}" style="--segment-width:${s.width}"/>`;
-      return `<g class="physical-segment" data-segment-id="${this._esc(s.id)}" data-segment-name="${this._esc(s.name || s.id)}">
-        ${body}
-        <path class="segment-guide" d="${guide}" data-start-inset="${s.startInset}" data-end-inset="${s.endInset}" data-dot-fractions="${Array.isArray(s.dotFractions) ? s.dotFractions.join(",") : ""}"/>
+    let ghosts;
+    let active;
+
+    if (style === "original") {
+      ghosts = originalGhostField();
+      active = originalActiveGlyph(character, id);
+    } else {
+      ghosts = fieldSegments(style).map((s) => `<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}" data-segment-id="${this._esc(s.id)}"/>`).join("");
+      active = glyphSegments(style, character).map((s) => `<g class="physical-segment" data-segment-id="${this._esc(s.id)}" data-segment-name="${this._esc(s.name || s.id)}">
+        <path class="segment-glow" d="${s.d}" style="--segment-width:${s.width};--segment-glow-width:${(s.width + 2.8).toFixed(2)}" filter="url(#${id}-glow)"/>
+        <path class="segment-band" d="${s.d}" style="--segment-width:${s.width}"/>
+        <path class="segment-guide" d="${s.d}" data-start-inset="${s.startInset}" data-end-inset="${s.endInset}" data-dot-fractions="${Array.isArray(s.dotFractions) ? s.dotFractions.join(",") : ""}"/>
         <g class="phosphor-dots"></g>
-      </g>`;
-    }).join("");
+      </g>`).join("");
+    }
 
     return `<div class="tube ${style}" data-index="${index}" data-character="${this._esc(character)}">
       <i class="cap top"></i><svg viewBox="0 0 80 132" aria-hidden="true">
         <defs>
-          <filter id="${id}-glow" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="1.7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="${id}-glow" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="1.15" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <pattern id="${id}-mesh" width="9" height="7.8" patternUnits="userSpaceOnUse"><path d="M2.25 0L6.75 0L9 3.9L6.75 7.8L2.25 7.8L0 3.9Z" fill="none" stroke="rgba(165,218,181,.12)" stroke-width=".52"/></pattern>
           <linearGradient id="${id}-shade"><stop stop-color="rgba(255,255,255,.18)"/><stop offset=".15" stop-color="rgba(255,255,255,.02)"/><stop offset=".85" stop-color="rgba(0,0,0,.03)"/><stop offset="1" stop-color="rgba(255,255,255,.13)"/></linearGradient>
         </defs>
@@ -89,35 +139,20 @@ export const renderMethods = {
       let length;
       try { length = guide.getTotalLength(); } catch { return; }
       if (!Number.isFinite(length) || length <= 0) return;
-
-      const storedFractions = String(guide.dataset.dotFractions || "")
-        .split(",")
-        .map(Number)
-        .filter((value) => Number.isFinite(value) && value >= 0 && value <= 1);
-
-      let distances;
-      if (storedFractions.length) {
-        distances = storedFractions.map((fraction) => fraction * length);
-      } else {
-        const start = Number(guide.dataset.startInset || 1.0);
-        const end = Number(guide.dataset.endInset || 1.0);
-        const usable = Math.max(0, length - start - end);
-        const spacing = 2.75;
-        const count = Math.max(1, Math.floor(usable / spacing));
-        const actualSpacing = count > 1 ? usable / (count - 1) : 0;
-        distances = Array.from({ length: count }, (_, index) =>
-          Math.min(length - end, start + index * actualSpacing)
-        );
-      }
-
+      const storedFractions = String(guide.dataset.dotFractions || "").split(",").map(Number).filter((value) => Number.isFinite(value) && value >= 0 && value <= 1);
+      const start = Number(guide.dataset.startInset || 1.0);
+      const end = Number(guide.dataset.endInset || 1.0);
+      const usable = Math.max(0, length - start - end);
+      const distances = storedFractions.length
+        ? storedFractions.map((fraction) => fraction * length)
+        : Array.from({ length: Math.max(1, Math.floor(usable / 2.75)) }, (_, index, items) => start + (items.length > 1 ? index * usable / (items.length - 1) : 0));
       distances.forEach((distance, index) => {
-        const point = guide.getPointAtLength(distance);
+        const point = guide.getPointAtLength(Math.min(length - end, distance));
         const circle = document.createElementNS(SVG_NS, "circle");
         circle.setAttribute("cx", point.x.toFixed(3));
         circle.setAttribute("cy", point.y.toFixed(3));
         circle.setAttribute("r", (index % 5 === 0 ? 0.69 : 0.62).toString());
         circle.setAttribute("class", "phosphor-dot");
-        circle.style.opacity = (0.89 + ((index * 17) % 8) / 100).toFixed(2);
         dots.appendChild(circle);
       });
     });
@@ -126,17 +161,7 @@ export const renderMethods = {
   _decimalMarker(boundary) {
     const c = this._config;
     const x = 15 + boundary * (c.tube_width + c.tube_gap) - c.tube_gap / 2;
-    return `<span class="decimal-marker-wrap" style="left:calc(${x}px * var(--s))" aria-hidden="true">
-      <svg class="decimal-marker-svg" viewBox="0 0 26 34" preserveAspectRatio="xMidYMid meet">
-        <ellipse class="marker-shadow" cx="13" cy="31" rx="7.8" ry="2.2"/>
-        <polygon class="marker-left" points="13,1 4,11 7,25 13,33 13,8"/>
-        <polygon class="marker-centre" points="13,1 13,8 13,33 19,24 22,11"/>
-        <polygon class="marker-right" points="13,1 22,11 19,24 13,33 15,10"/>
-        <polygon class="marker-lower" points="7,25 13,33 19,24 13,27"/>
-        <path class="marker-highlight" d="M15 5 C17 9 17 17 15 24"/>
-        <path class="marker-scratch" d="M9 10 L8 19 M18 13 L17 20"/>
-      </svg>
-    </span>`;
+    return `<span class="decimal-marker-wrap" style="left:calc(${x}px * var(--s))" aria-hidden="true"><svg class="decimal-marker-svg" viewBox="0 0 26 34" preserveAspectRatio="xMidYMid meet"><ellipse class="marker-shadow" cx="13" cy="31" rx="7.8" ry="2.2"/><polygon class="marker-left" points="13,1 4,11 7,25 13,33 13,8"/><polygon class="marker-centre" points="13,1 13,8 13,33 19,24 22,11"/><polygon class="marker-right" points="13,1 22,11 19,24 13,33 15,10"/><polygon class="marker-lower" points="7,25 13,33 19,24 13,27"/><path class="marker-highlight" d="M15 5 C17 9 17 17 15 24"/><path class="marker-scratch" d="M9 10 L8 19 M18 13 L17 20"/></svg></span>`;
   },
 
   _markers(count) {
