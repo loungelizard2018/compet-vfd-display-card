@@ -1,0 +1,54 @@
+name: Publish v0.5.2 tube geometry correction
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-v0.5.2-geometry.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply focused geometry correction
+        run: python scripts/apply_v0_5_2_geometry_fix.py
+
+      - name: Validate source, masks and runtime bundle
+        run: |
+          npm run verify
+          grep -Fq 'const VERSION = "0.5.2";' compet-vfd-display-card.js
+          grep -Fq 'GLYPH_SAFE_AREA' compet-vfd-display-card.js
+          grep -Fq 'electrode-clip' compet-vfd-display-card.js
+          grep -Fq 'electrode-window' compet-vfd-display-card.js
+          grep -Fq '"version": "0.5.2"' package.json
+
+      - name: Commit corrected release sources
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add compet-vfd-*.js package.json README.md CHANGELOG.md tests/v0.5.2-geometry.test.mjs
+          git commit -m 'fix: keep COMPET electrodes inside the tube geometry'
+          git push origin main
+
+      - name: Create v0.5.2 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag -a v0.5.2 -m 'COMPET VFD Display Card v0.5.2'
+          git push origin v0.5.2
+          gh release create v0.5.2 \
+            --verify-tag \
+            --title 'v0.5.2' \
+            --notes 'Focused geometry correction: fixed inner-tube fitting and clipping, removed the shared lower-bowl remnant visible in 3/5/8, and raised the L electrode of 4 above the lower slash.'
+          gh release view v0.5.2 --json tagName,isDraft,isPrerelease,url > RELEASE_V0.5.2_VERIFIED.json
+          git add RELEASE_V0.5.2_VERIFIED.json
+          git commit -m 'docs: record v0.5.2 release verification'
+          git push origin main
