@@ -24,6 +24,15 @@ const EXPECTED = Object.freeze({
   "9": ["A", "B", "C", "H"]
 });
 
+const USES = Object.freeze({
+  B: ["2", "3", "5", "7", "8", "9"],
+  C: ["2", "3", "6", "7", "8", "9"],
+  D: ["0", "2", "6", "8"],
+  E: ["0", "2", "3", "5", "6", "8"],
+  G: ["1", "4"],
+  H: ["1", "4", "7", "9"]
+});
+
 test("canonical COMPET digit matrix is exact", () => {
   for (const [digit, ids] of Object.entries(EXPECTED)) {
     assert.deepEqual(ORIGINAL_DIGIT_SEGMENTS[digit], ids);
@@ -44,10 +53,37 @@ test("all digit references resolve to the same canonical objects", () => {
   }
 });
 
-test("shared segment B has object identity in every numeral that uses it", () => {
-  for (const digit of ["2", "3", "5", "7", "8", "9"]) {
-    assert.ok(originalSegmentsFor(digit).includes(ORIGINAL_SEGMENTS.B));
+test("B C D E G H remain stable shared objects in every numeral that uses them", () => {
+  for (const [id, digits] of Object.entries(USES)) {
+    for (const digit of digits) {
+      assert.ok(originalSegmentsFor(digit).includes(ORIGINAL_SEGMENTS[id]), `${id} missing from ${digit}`);
+    }
   }
+});
+
+test("D and E are fixed stored 180-degree counterparts of C and B", () => {
+  assert.equal(ORIGINAL_SEGMENTS.D.derivedFrom, "C@rotate180(40,66)");
+  assert.equal(ORIGINAL_SEGMENTS.E.derivedFrom, "B@rotate180(40,66)");
+  assert.equal(
+    ORIGINAL_SEGMENTS.D.path,
+    "M34.0 67.3 C31.3 75.5 27.5 82.0 23.4 87.6 C18.7 93.9 16.0 101.0 17.6 106.8"
+  );
+  assert.equal(
+    ORIGINAL_SEGMENTS.E.path,
+    "M20.2 112.4 C32.3 115.3 44.3 114.8 50.0 108.3"
+  );
+  assert.equal(ORIGINAL_SEGMENTS.D.width, ORIGINAL_SEGMENTS.C.width);
+  assert.equal(ORIGINAL_SEGMENTS.E.width, ORIGINAL_SEGMENTS.B.width);
+  assert.equal(ORIGINAL_SEGMENTS.D.dotFractions.length, ORIGINAL_SEGMENTS.C.dotFractions.length);
+  assert.equal(ORIGINAL_SEGMENTS.E.dotFractions.length, ORIGINAL_SEGMENTS.B.dotFractions.length);
+});
+
+test("digit one uses two separate compact cut electrodes", () => {
+  assert.deepEqual(ORIGINAL_DIGIT_SEGMENTS["1"], ["G", "H"]);
+  assert.equal(ORIGINAL_SEGMENTS.G.linecap, "butt");
+  assert.equal(ORIGINAL_SEGMENTS.H.linecap, "butt");
+  assert.notEqual(ORIGINAL_SEGMENTS.G.path, ORIGINAL_SEGMENTS.H.path);
+  assert.ok(ORIGINAL_SEGMENTS.G.dotFractions.length < ORIGINAL_SEGMENTS.H.dotFractions.length);
 });
 
 test("all original segments use cut ends and stable dot positions", () => {
