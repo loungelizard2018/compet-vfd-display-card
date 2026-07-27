@@ -1,6 +1,6 @@
-/** COMPET VFD Display Card for Home Assistant - Version 0.3.1 */
-import { CompetVfdDisplayCard } from "./compet-vfd-card.js?v=0.3.1";
-const COMPET_VFD_VERSION = "0.3.1";
+/** COMPET VFD Display Card for Home Assistant - Version 0.4.0 */
+import { CompetVfdDisplayCard } from "./compet-vfd-card.js?v=0.4.0";
+const COMPET_VFD_VERSION = "0.4.0";
 
 const inheritedStyles = CompetVfdDisplayCard.prototype._styles;
 CompetVfdDisplayCard.prototype._styles = function () {
@@ -10,12 +10,13 @@ CompetVfdDisplayCard.prototype._styles = function () {
     .segment-glow{stroke:var(--glow);stroke-width:var(--segment-glow-width);opacity:.34}
     .segment-band{stroke:var(--glow);stroke-width:var(--segment-width);opacity:.86}
     .segment-guide{stroke:transparent;stroke-width:.1;pointer-events:none}
-    .phosphor-dot{fill:var(--phosphor);filter:drop-shadow(0 0 .7px var(--glow));pointer-events:none}
-    .tube.original .segment-band{opacity:.82}
-    .tube.original .ghost-segment{opacity:.31}
+    .phosphor-dot,.mask-dot{fill:var(--phosphor);filter:drop-shadow(0 0 .7px var(--glow));pointer-events:none}
+    .mask-glow{fill:var(--glow);pointer-events:none}
+    .mask-ghost{fill:var(--off);pointer-events:none}
+    .tube.original .active-glyph{isolation:isolate}
     .tube.alternative .segment-band{stroke-linecap:round}
     .tube.alternative .segment-glow{stroke-linecap:round}
-    .tube.switching .segment-band,.tube.switching .segment-glow,.tube.switching .phosphor-dot{animation:sw var(--duration)}
+    .tube.switching .segment-band,.tube.switching .segment-glow,.tube.switching .phosphor-dot,.tube.switching .mask-cell{animation:sw var(--duration)}
     .decimal-marker-wrap{position:absolute;z-index:9;bottom:calc(-1px*var(--s));width:calc(17px*var(--s));height:calc(23px*var(--s));transform:translateX(-50%) rotate(-1.5deg);pointer-events:none}
     .decimal-marker-svg{display:block;width:100%;height:100%;overflow:visible}
     .marker-shadow{fill:rgba(0,0,0,.75);filter:blur(.75px)}
@@ -30,5 +31,5 @@ CompetVfdDisplayCard.prototype._styles = function () {
 
 if (!customElements.get("compet-vfd-display-card")) customElements.define("compet-vfd-display-card", CompetVfdDisplayCard);
 window.customCards = window.customCards || [];
-if (!window.customCards.some((card) => card.type === "compet-vfd-display-card")) window.customCards.push({type:"compet-vfd-display-card",name:"COMPET VFD Display",description:"Photorealistic COMPET 18 inspired glass-cylinder display.",preview:true,documentationURL:"https://github.com/loungelizard2018/compet-vfd-display-card"});
+if (!window.customCards.some((card) => card.type === "compet-vfd-display-card")) window.customCards.push({type:"compet-vfd-display-card",name:"COMPET VFD Display",description:"Photorealistic SHARP COMPET 18 glass-cylinder display reconstructed from the original shared electrode matrix.",preview:true,documentationURL:"https://github.com/loungelizard2018/compet-vfd-display-card"});
 console.info(`%c COMPET-VFD-DISPLAY-CARD %c v${COMPET_VFD_VERSION} `,"color:white;background:#123b21;font-weight:700;","color:#07150c;background:#45f47e;");
