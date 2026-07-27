@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1
+
+- Replaced the HACS entry point with a fully self-contained JavaScript bundle.
+- Removed all runtime `import` dependencies from `compet-vfd-display-card.js`.
+- Fixed `Custom element doesn't exist: compet-vfd-display-card` when HACS installed only the configured entry file.
+- Preserved the 48×80 four-level COMPET electrode matrices and the optional `alternative` glyph style.
+
 ## 0.4.0
 
 - Rebuilt the default `original` glyph set from perspective-corrected photographs of the SHARP COMPET 18 display.
