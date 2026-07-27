@@ -4,28 +4,22 @@
 
 # COMPET VFD Display Card
 
-A photorealistic numeric display card for Home Assistant inspired by the individually switched glass-cylinder display of the 1969 SHARP COMPET 18 calculator.
+Photorealistic numeric display card for Home Assistant, reconstructed from the individually switched glass-cylinder display of the 1969 SHARP COMPET 18 calculator.
 
-> **Experimental visual-review branch:** `fix/true-compet-shared-segments`
->
-> This branch does not contain a new release or version bump. It replaces the incorrect per-digit original paths with one canonical set of exactly eight shared physical electrode segments. It must not be merged or released until the visual atlas is approved.
+## Original COMPET electrode model
 
-## True shared-segment model
+The default `original` style is derived from perspective-corrected photographs. It uses exactly eight shared physical electrodes and a fine **48×80 matrix with four phosphor levels** rather than independent hand-drawn numerals.
 
-The original style is now defined by these eight immutable objects:
-
-| ID | Name | Source numeral |
-|---|---|---:|
-| `A` | upper-left-return | `4` |
-| `B` | upper-roof | `2` |
-| `C` | upper-right-hook | `2` |
-| `D` | lower-left-sweep | `2` |
-| `E` | lower-base | `2` |
-| `F` | lower-right-return | `3` |
-| `G` | one-upper-slash | `1` |
-| `H` | one-lower-slash | `1` |
-
-No original numeral owns a private path and no segment is transformed for a particular digit. The binding matrix is fixed:
+| ID | Electrode |
+|---|---|
+| `A` | upper-left return used by 4/5/8/9 |
+| `B` | upper roof |
+| `C` | upper-right hook |
+| `D` | lower-left counterpart of C |
+| `E` | lower counterpart of B |
+| `F` | lower-right return |
+| `G` | upper electrode of 1 |
+| `H` | lower electrode of 1 |
 
 ```text
 0 = D E F
@@ -40,42 +34,15 @@ No original numeral owns a private path and no segment is transformed for a part
 9 = A B C H
 ```
 
-The previous smoother glyph set remains available unchanged as `style: alternative`.
-
-## Branch verification
-
-Run:
-
-```bash
-npm run verify
-python3 -m http.server 8000
-```
-
-Then open:
-
-```text
-http://localhost:8000/demo/segment-atlas.html
-http://localhost:8000/demo/reference-overlay.html
-```
-
-The atlas contains:
-
-- each physical segment A–H separately with cut endpoints,
-- `0123456789` assembled from the shared original objects,
-- the unchanged alternative row,
-- a colour-coded identity view proving reuse.
-
-The overlay tool accepts the supplied photograph locally, provides whole-cell position/scale/rotation controls, segment toggles, opacity controls and PNG export. It never performs OCR and never transforms an individual segment.
+The previous smoother numeral set remains available as `style: alternative`.
 
 ## HACS installation
 
-The stable release remains available through HACS:
-
 1. Open **HACS → Dashboard**.
-2. Open the three-dot menu and choose **Custom repositories**.
+2. Open **Custom repositories**.
 3. Add `https://github.com/loungelizard2018/compet-vfd-display-card`.
-4. Select **Dashboard** as the category.
-5. Install the latest published release and reload the frontend.
+4. Select **Dashboard**.
+5. Install the latest release and reload the Home Assistant frontend.
 
 Resource path:
 
@@ -83,7 +50,7 @@ Resource path:
 /hacsfiles/compet-vfd-display-card/compet-vfd-display-card.js
 ```
 
-## Original-style YAML
+## Example
 
 ```yaml
 type: custom:compet-vfd-display-card
@@ -121,6 +88,20 @@ allow_upscale: false
 max_fit_scale: 1
 ```
 
+## Static 0–9 test
+
+```yaml
+type: custom:compet-vfd-display-card
+value: 123456789
+integer_digits: 10
+decimals: 0
+leading_zeroes: true
+style: original
+label: COMPET 18 — 0123456789
+unit: ""
+show_unit: false
+```
+
 ## Alternative style
 
 ```yaml
@@ -133,41 +114,37 @@ label: RAM USAGE
 unit: "%"
 ```
 
-## Static digit test
-
-```yaml
-type: custom:compet-vfd-display-card
-value: 123456789
-integer_digits: 10
-decimals: 0
-leading_zeroes: true
-style: original
-label: SHARED SEGMENTS 0–9
-unit: ""
-show_unit: false
-```
-
 ## Main options
 
 | Option | Default | Description |
 |---|---:|---|
-| `entity` | required* | Numeric Home Assistant entity |
-| `value` | unset | Static numeric test value |
-| `attribute` | unset | Numeric entity attribute |
-| `style` | `original` | `original` or `alternative` |
+| `style` | `original` | `original` photographic matrix or `alternative` smooth paths |
 | `integer_digits` | `8` | Integer display tubes |
 | `decimals` | `0` | Fractional display tubes |
-| `leading_zeroes` | `false` | Fill unused integer positions with zeroes |
-| `glow_color` | `#20f56b` | Active electrode glow |
-| `phosphor_color` | `#d8ffe3` | Sharp phosphor-dot colour |
-| `inactive_color` | green transparent | Inactive electrode field |
+| `leading_zeroes` | `false` | Fill unused positions with zeroes |
+| `glow_color` | `#20f56b` | Active glow colour |
+| `phosphor_color` | `#d8ffe3` | Bright phosphor-core colour |
+| `inactive_color` | transparent green | Inactive electrode field |
 | `decimal_marker` | `true` | External physical decimal marker |
 | `decimal_marker_color` | `#d9362e` | Marker centre colour |
-| `frame` | `gauge_black` | `gauge_black` or `none` |
-| `screws` | `true` | Show four mounting screws |
-| `fit_to_card` | `true` | Fit the instrument to its column |
+| `frame` | `gauge_black` | Black instrument frame or `none` |
+| `screws` | `true` | Four mounting screws |
+| `fit_to_card` | `true` | Fit instrument to available width |
 
-`entity` is not required when `value` is configured.
+## Development tools
+
+```bash
+npm run verify
+python3 -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000/demo/segment-atlas.html
+http://localhost:8000/demo/pixel-segment-editor.html
+http://localhost:8000/demo/reference-overlay.html
+```
 
 ## Licence
 
