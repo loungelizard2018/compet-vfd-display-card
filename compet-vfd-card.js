@@ -1,7 +1,7 @@
-import { configMethods } from "./compet-vfd-config.js?v=0.3.1";
-import { renderMethods } from "./compet-vfd-render.js?v=0.3.1";
-import { updateMethods } from "./compet-vfd-update.js?v=0.3.1";
-import { utilityMethods } from "./compet-vfd-utils.js?v=0.3.1";
+import { configMethods } from "./compet-vfd-config.js?v=0.4.0";
+import { renderMethods } from "./compet-vfd-render.js?v=0.4.0";
+import { updateMethods } from "./compet-vfd-update.js?v=0.4.0";
+import { utilityMethods } from "./compet-vfd-utils.js?v=0.4.0";
 
 export class CompetVfdDisplayCard extends HTMLElement {
   constructor() {
@@ -10,9 +10,7 @@ export class CompetVfdDisplayCard extends HTMLElement {
     this._config = null;
     this._hass = null;
     this._last = [];
-    this._observer = typeof ResizeObserver !== "undefined"
-      ? new ResizeObserver(() => this._fit())
-      : null;
+    this._observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => this._fit()) : null;
   }
 
   static getStubConfig() {
