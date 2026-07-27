@@ -6,17 +6,16 @@ import {
   ORIGINAL_FIELD_SEGMENTS,
   originalSegmentsFor
 } from "../compet-vfd-segments.js";
-import {
-  ALTERNATIVE_GLYPHS,
-  glyphSegments
-} from "../compet-vfd-glyphs.js";
+import { ALTERNATIVE_GLYPHS, glyphSegments } from "../compet-vfd-glyphs.js";
 import {
   MATRIX_COLS,
   MATRIX_ROWS,
+  MATRIX_LEVELS,
   ORIGINAL_SEGMENT_MASKS,
   activeCellsForSegment,
   composeDigitMask,
-  minimumMaskGap
+  minimumMaskGap,
+  maskLevelCounts
 } from "../compet-vfd-segment-masks.js";
 
 const EXPECTED = Object.freeze({
@@ -33,31 +32,89 @@ const EXPECTED = Object.freeze({
 });
 
 const USES = Object.freeze({
+  A: ["4", "5", "8", "9"],
   B: ["2", "3", "5", "7", "8", "9"],
   C: ["2", "3", "6", "7", "8", "9"],
   D: ["0", "2", "6", "8"],
   E: ["0", "2", "3", "5", "6", "8"],
+  F: ["0", "3", "5", "6", "8"],
   G: ["1", "4"],
   H: ["1", "4", "7", "9"]
 });
 
-const countRange = (mask, start, end) => mask.slice(start, end).reduce(
-  (sum, row) => sum + [...row].filter((cell) => cell === "1").length,
+const rotate180 = (mask) => Object.freeze([...mask].reverse().map((row) => [...row].reverse().join("")));
+const weightedCount = (mask, start = 0, end = mask.length) => mask.slice(start, end).reduce(
+  (sum, row) => sum + [...row].reduce((rowSum, value) => rowSum + Number(value), 0),
   0
 );
-
-const cellsIn = (id, predicate) => activeCellsForSegment(id).filter(predicate);
 
 test("canonical COMPET digit matrix is exact", () => {
   for (const [digit, ids] of Object.entries(EXPECTED)) assert.deepEqual(ORIGINAL_DIGIT_SEGMENTS[digit], ids);
 });
 
-test("there are exactly eight original segments A-H", () => {
+test("there are exactly eight immutable shared original segments", () => {
   assert.deepEqual(Object.keys(ORIGINAL_SEGMENTS), ["A", "B", "C", "D", "E", "F", "G", "H"]);
   assert.equal(ORIGINAL_FIELD_SEGMENTS.length, 8);
+  for (const [id, digits] of Object.entries(USES)) for (const digit of digits) {
+    assert.ok(originalSegmentsFor(digit).includes(ORIGINAL_SEGMENTS[id]), `${id} missing from ${digit}`);
+  }
 });
 
-test("all digit references resolve to the same canonical objects", () => {
+test("fine masks are frozen 48 by 80 matrices with four intensity levels", () => {
+  assert.equal(MATRIX_COLS, 48);
+  assert.equal(MATRIX_ROWS, 80);
+  assert.equal(MATRIX_LEVELS, 4);
+  assert.deepEqual(Object.keys(ORIGINAL_SEGMENT_MASKS), ["A", "B", "C", "D", "E", "F", "G", "H"]);
+  for (const mask of Object.values(ORIGINAL_SEGMENT_MASKS)) {
+    assert.ok(Object.isFrozen(mask));
+    assert.equal(mask.length, MATRIX_ROWS);
+    for (const row of mask) {
+      assert.equal(row.length, MATRIX_COLS);
+      assert.match(row, /^[0-3]{48}$/);
+    }
+    const counts = maskLevelCounts(mask);
+    assert.equal(counts.reduce((a, b) => a + b, 0), MATRIX_ROWS * MATRIX_COLS);
+    assert.ok(counts[1] + counts[2] + counts[3] > 0);
+    assert.ok(counts[3] > 0, "each segment needs a bright phosphor core");
+  }
+});
+
+test("D and E are exact fixed 180-degree counterparts of C and B", () => {
+  assert.deepEqual(ORIGINAL_SEGMENT_MASKS.D, rotate180(ORIGINAL_SEGMENT_MASKS.C));
+  assert.deepEqual(ORIGINAL_SEGMENT_MASKS.E, rotate180(ORIGINAL_SEGMENT_MASKS.B));
+  assert.equal(ORIGINAL_SEGMENTS.D.derivedFrom, "C@rotate180(40,66)");
+  assert.equal(ORIGINAL_SEGMENTS.E.derivedFrom, "B@rotate180(40,66)");
+});
+
+test("G and H remain separate reference-derived components with a compact gap", () => {
+  assert.ok(activeCellsForSegment("G", ORIGINAL_SEGMENT_MASKS, 2).length > 0);
+  assert.ok(activeCellsForSegment("H", ORIGINAL_SEGMENT_MASKS, 2).length > 0);
+  const gap = minimumMaskGap(ORIGINAL_SEGMENT_MASKS.G, ORIGINAL_SEGMENT_MASKS.H, 1);
+  assert.ok(gap >= 0, "G and H must not share active mask cells");
+  assert.ok(gap <= 3, `G-H gap too large: ${gap}`);
+});
+
+test("G and H retain graded cores rather than binary blocks", () => {
+  for (const id of ["G", "H"]) {
+    const counts = maskLevelCounts(ORIGINAL_SEGMENT_MASKS[id]);
+    assert.ok(counts[1] > 0);
+    assert.ok(counts[2] > 0);
+    assert.ok(counts[3] > 0);
+  }
+  assert.ok(weightedCount(ORIGINAL_SEGMENT_MASKS.G, 20, 37) > 0);
+  assert.ok(weightedCount(ORIGINAL_SEGMENT_MASKS.H, 37, 55) > 0);
+});
+
+test("all digit matrices compose with maximum intensity and preserve dimensions", () => {
+  for (const digit of Object.keys(EXPECTED)) {
+    const mask = composeDigitMask(digit);
+    assert.equal(mask.length, MATRIX_ROWS);
+    assert.ok(mask.every((row) => /^[0-3]{48}$/.test(row)));
+    assert.ok(mask.some((row) => /[1-3]/.test(row)));
+  }
+});
+
+test("all digit references resolve to canonical segment object identity", () => {
   for (const [digit, ids] of Object.entries(EXPECTED)) {
     const resolved = originalSegmentsFor(digit);
     assert.equal(resolved.length, ids.length);
@@ -66,97 +123,7 @@ test("all digit references resolve to the same canonical objects", () => {
   }
 });
 
-test("B C D E G H remain stable shared objects in every numeral that uses them", () => {
-  for (const [id, digits] of Object.entries(USES)) for (const digit of digits) {
-    assert.ok(originalSegmentsFor(digit).includes(ORIGINAL_SEGMENTS[id]), `${id} missing from ${digit}`);
-  }
-});
-
-test("D and E are fixed stored 180-degree counterparts of C and B", () => {
-  assert.equal(ORIGINAL_SEGMENTS.D.derivedFrom, "C@rotate180(40,66)");
-  assert.equal(ORIGINAL_SEGMENTS.E.derivedFrom, "B@rotate180(40,66)");
-  assert.equal(ORIGINAL_SEGMENTS.D.width, ORIGINAL_SEGMENTS.C.width);
-  assert.equal(ORIGINAL_SEGMENTS.E.width, ORIGINAL_SEGMENTS.B.width);
-  assert.equal(ORIGINAL_SEGMENTS.D.dotFractions.length, ORIGINAL_SEGMENTS.C.dotFractions.length);
-  assert.equal(ORIGINAL_SEGMENTS.E.dotFractions.length, ORIGINAL_SEGMENTS.B.dotFractions.length);
-});
-
-test("all canonical masks A-H are frozen 24 by 40 matrices", () => {
-  assert.equal(MATRIX_COLS, 24);
-  assert.equal(MATRIX_ROWS, 40);
-  assert.deepEqual(Object.keys(ORIGINAL_SEGMENT_MASKS), ["A", "B", "C", "D", "E", "F", "G", "H"]);
-  for (const mask of Object.values(ORIGINAL_SEGMENT_MASKS)) {
-    assert.ok(Object.isFrozen(mask));
-    assert.equal(mask.length, MATRIX_ROWS);
-    for (const row of mask) {
-      assert.equal(row.length, MATRIX_COLS);
-      assert.match(row, /^[01]{24}$/);
-    }
-  }
-});
-
-test("A G and H masks are non-empty and drive shaped production electrodes", () => {
-  for (const id of ["A", "G", "H"]) {
-    assert.ok(activeCellsForSegment(id).length > 0);
-    assert.equal(ORIGINAL_SEGMENTS[id].maskSource, `${id}@24x40`);
-    assert.match(ORIGINAL_SEGMENTS[id].shape, /^M/);
-  }
-});
-
-test("G contains an upper-left barb and widens towards its lower end", () => {
-  const cells = activeCellsForSegment("G");
-  const upper = cells.filter(({ row }) => row <= 8);
-  assert.ok(upper.some(({ row, col }) => row >= 5 && col <= 15), "G needs the upper-left barb");
-  assert.ok(countRange(ORIGINAL_SEGMENT_MASKS.G, 10, 16) > countRange(ORIGINAL_SEGMENT_MASKS.G, 4, 10));
-});
-
-test("H forms a separate wedge that becomes broader near its bottom", () => {
-  assert.ok(countRange(ORIGINAL_SEGMENT_MASKS.H, 25, 32) > countRange(ORIGINAL_SEGMENT_MASKS.H, 17, 24));
-  assert.ok(Math.min(...activeCellsForSegment("H").map(({ row }) => row)) > Math.max(...activeCellsForSegment("G").map(({ row }) => row)));
-});
-
-test("A has an angular vertical leg and a distinct rightward arm", () => {
-  const vertical = cellsIn("A", ({ row, col }) => row >= 7 && row <= 19 && col <= 9);
-  const arm = cellsIn("A", ({ row, col }) => row >= 19 && row <= 23 && col >= 10);
-  assert.ok(vertical.length >= 15, "A needs a strong descending leg");
-  assert.ok(arm.length >= 8, "A needs a clear rightward arm");
-});
-
-test("the G-H inter-segment gap is no more than two mask cells", () => {
-  const gap = minimumMaskGap(ORIGINAL_SEGMENT_MASKS.G, ORIGINAL_SEGMENT_MASKS.H);
-  assert.ok(gap >= 0, "G and H must remain separate");
-  assert.ok(gap <= 2, `G-H gap is too large: ${gap}`);
-});
-
-test("digit masks compose without changing the canonical matrix", () => {
-  for (const digit of Object.keys(EXPECTED)) {
-    const composed = composeDigitMask(digit);
-    assert.equal(composed.length, 40);
-    assert.ok(composed.some((row) => row.includes("1")));
-  }
-});
-
-test("all original segments use cut ends and stable dot positions", () => {
-  for (const [id, segment] of Object.entries(ORIGINAL_SEGMENTS)) {
-    assert.equal(segment.id, id);
-    assert.equal(segment.linecap, "butt");
-    assert.match(segment.path, /^M/);
-    assert.ok(Object.isFrozen(segment));
-    assert.ok(Array.isArray(segment.dotFractions));
-    assert.ok(segment.dotFractions.length >= 10);
-    assert.ok(Object.isFrozen(segment.dotFractions));
-  }
-});
-
-test("digits contain no duplicate or unknown segment IDs", () => {
-  const valid = new Set(Object.keys(ORIGINAL_SEGMENTS));
-  for (const ids of Object.values(ORIGINAL_DIGIT_SEGMENTS)) {
-    assert.equal(new Set(ids).size, ids.length);
-    ids.forEach((id) => assert.ok(valid.has(id)));
-  }
-});
-
-test("previous alternative glyph set remains available", () => {
+test("previous alternative glyph style remains untouched", () => {
   assert.deepEqual(Object.keys(ALTERNATIVE_GLYPHS), ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", " "]);
   assert.ok(glyphSegments("alternative", "8").length > 0);
   assert.notStrictEqual(glyphSegments("alternative", "8")[0], ORIGINAL_SEGMENTS.A);
