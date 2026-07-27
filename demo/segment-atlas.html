@@ -7,12 +7,14 @@
 <style>
   :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#070b09;color:#e8f3eb}
   body{margin:0;padding:28px;background:radial-gradient(circle at 50% 0,#13231a,#070b09 55%)}
-  h1{margin:0 0 8px;font-size:26px} p{color:#9fb4a6;max-width:980px}
+  h1{margin:0 0 8px;font-size:26px}p{color:#9fb4a6;max-width:1040px}
   section{margin:28px 0;padding:18px;border:1px solid #26362c;border-radius:14px;background:#0c120f}
+  section.focus{border-color:#53725e;background:#101a14;box-shadow:0 0 0 1px #1c3825 inset}
   h2{font-size:16px;margin:0 0 14px;color:#b9cabf;text-transform:uppercase;letter-spacing:.12em}
   .row{display:flex;gap:12px;align-items:flex-start;overflow-x:auto;padding:8px}
-  .cell{flex:0 0 112px;text-align:center}
-  .tube{width:108px;height:178px;border-radius:20px;background:linear-gradient(90deg,#07110c,#030704 50%,#0b1710);border:1px solid #35473b;box-shadow:inset 0 0 20px #000,0 10px 20px #0008;position:relative}
+  .cell{flex:0 0 112px;text-align:center}.focus .cell{flex-basis:232px}
+  .tube{width:108px;height:178px;border-radius:20px;background:linear-gradient(90deg,#07110c,#030704 50%,#0b1710);border:1px solid #35473b;box-shadow:inset 0 0 20px #000,0 10px 20px #0008;position:relative;margin:auto}
+  .focus .tube{width:220px;height:363px;border-radius:32px}
   .tube svg{width:100%;height:100%;overflow:visible}.label{font-weight:700;margin-top:8px}.name{font-size:11px;color:#85978b;min-height:28px}
   .mesh{opacity:.18}.wire{stroke:#8e896d;stroke-width:.8;opacity:.45}.ghost{fill:none;stroke:#14341f;stroke-width:3.6;stroke-linecap:butt;opacity:.55}
   .active{fill:none;stroke:#26ff73;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;filter:drop-shadow(0 0 4px #20f56b)}
@@ -24,7 +26,8 @@
 </head>
 <body>
 <h1>SHARP COMPET 18 — canonical shared segment atlas</h1>
-<p>Branch-only visual check. The original row is composed from exactly eight immutable electrode objects A–H. No per-digit transform or replacement path is used.</p>
+<p>Branch-only visual check. The original row is composed from exactly eight immutable electrode objects A–H. D is the fixed 180° counterpart of C, E the fixed 180° counterpart of B. No per-digit transform is used.</p>
+<section class="focus"><h2>Focused correction review — digit 1 and digit 2</h2><div id="focus" class="row"></div></section>
 <section><h2>1 — Individual physical segments A–H</h2><div id="segments" class="row"></div></section>
 <section><h2>2 — Original shared-segment numerals 0123456789</h2><div id="original" class="row"></div></section>
 <section><h2>3 — Previous alternative numerals</h2><div id="alternative" class="row"></div></section>
@@ -41,25 +44,31 @@ function baseTube(){
   const wrap=document.createElement("div");wrap.className="cell";
   const tube=document.createElement("div");tube.className="tube";
   const svg=svgEl("svg",{viewBox:"0 0 80 132"});
-  const defs=svgEl("defs");
-  const pat=svgEl("pattern",{id:"mesh-"+Math.random().toString(36).slice(2),width:"9",height:"7.8",patternUnits:"userSpaceOnUse"});
+  const defs=svgEl("defs");const id="mesh-"+Math.random().toString(36).slice(2);
+  const pat=svgEl("pattern",{id,width:"9",height:"7.8",patternUnits:"userSpaceOnUse"});
   pat.append(svgEl("path",{d:"M2.25 0L6.75 0L9 3.9L6.75 7.8L2.25 7.8L0 3.9Z",fill:"none",stroke:"#89b497","stroke-width":".45"}));defs.append(pat);svg.append(defs);
   svg.append(svgEl("rect",{x:"7",y:"3",width:"66",height:"126",rx:"13",fill:"#020805",stroke:"#789081","stroke-opacity":".32"}));
-  const mesh=svgEl("rect",{x:"9",y:"10",width:"62",height:"112",rx:"9",fill:`url(#${pat.id})`,class:"mesh"});svg.append(mesh);
-  svg.append(svgEl("path",{d:"M40 8V121",class:"wire"}));tube.append(svg);wrap.append(tube);return {wrap,tube,svg};
+  svg.append(svgEl("rect",{x:"9",y:"10",width:"62",height:"112",rx:"9",fill:`url(#${id})`,class:"mesh"}));
+  svg.append(svgEl("path",{d:"M40 8V121",class:"wire"}));tube.append(svg);wrap.append(tube);return {wrap,svg};
 }
 function addSegment(svg,segment,{colour="#26ff73",debug=false,showEnds=false,alternative=false}={}){
   const path=svgEl("path",{d:segment.d||segment.path,class:`active ${alternative?"alt":""}`,stroke:colour,"stroke-width":segment.width||4});svg.append(path);
   const fractions=segment.dotFractions||Array.from({length:Math.max(10,Math.floor(path.getTotalLength()/3))},(_,i,a)=>.04+i*.92/(a.length-1));
-  for(const point of points(segment.d||segment.path,fractions)){svg.append(svgEl("circle",{cx:point.x,cy:point.y,r:".62",class:"dot"}))}
-  if(showEnds){const length=path.getTotalLength();const a=path.getPointAtLength(0),b=path.getPointAtLength(length);svg.append(svgEl("circle",{cx:a.x,cy:a.y,r:"2",class:"endpoint start"}));svg.append(svgEl("circle",{cx:b.x,cy:b.y,r:"2",class:"endpoint end"}))}
-  if(debug){const mid=path.getPointAtLength(path.getTotalLength()/2);const t=svgEl("text",{x:mid.x+2,y:mid.y-2,class:"debug-letter"});t.textContent=segment.id;svg.append(t)}
+  for(const point of points(segment.d||segment.path,fractions))svg.append(svgEl("circle",{cx:point.x,cy:point.y,r:".62",class:"dot"}));
+  if(showEnds){const length=path.getTotalLength(),a=path.getPointAtLength(0),b=path.getPointAtLength(length);svg.append(svgEl("circle",{cx:a.x,cy:a.y,r:"2",class:"endpoint start"}));svg.append(svgEl("circle",{cx:b.x,cy:b.y,r:"2",class:"endpoint end"}))}
+  if(debug){const mid=path.getPointAtLength(path.getTotalLength()/2),t=svgEl("text",{x:mid.x+2,y:mid.y-2,class:"debug-letter"});t.textContent=segment.id;svg.append(t)}
 }
 function labelCell(wrap,title,name=""){const l=document.createElement("div");l.className="label";l.textContent=title;wrap.append(l);const n=document.createElement("div");n.className="name";n.textContent=name;wrap.append(n)}
+function originalCell(title,ids,{colour=false,ends=false}={}){const {wrap,svg}=baseTube();for(const segment of Object.values(ORIGINAL_SEGMENTS))svg.append(svgEl("path",{d:segment.path,class:"ghost"}));for(const id of ids)addSegment(svg,ORIGINAL_SEGMENTS[id],{colour:colour?colours[id]:"#26ff73",debug:colour,showEnds:ends});labelCell(wrap,title,ids.join(" + "));return wrap}
+
+focus.append(originalCell("Digit 1",["G","H"],{ends:true}));
+focus.append(originalCell("Digit 2",["B","C","D","E"],{ends:true}));
+focus.append(originalCell("G + H",["G","H"],{colour:true,ends:true}));
+focus.append(originalCell("B + C + D + E",["B","C","D","E"],{colour:true,ends:true}));
 for(const [id,segment] of Object.entries(ORIGINAL_SEGMENTS)){const {wrap,svg}=baseTube();for(const ghost of Object.values(ORIGINAL_SEGMENTS))svg.append(svgEl("path",{d:ghost.path,class:"ghost"}));addSegment(svg,segment,{showEnds:true});labelCell(wrap,id,segment.name);segments.append(wrap)}
-for(const digit of "0123456789"){const {wrap,svg}=baseTube();for(const segment of Object.values(ORIGINAL_SEGMENTS))svg.append(svgEl("path",{d:segment.path,class:"ghost"}));for(const id of ORIGINAL_DIGIT_SEGMENTS[digit])addSegment(svg,ORIGINAL_SEGMENTS[id]);labelCell(wrap,digit,ORIGINAL_DIGIT_SEGMENTS[digit].join(" + "));original.append(wrap)}
+for(const digit of "0123456789")original.append(originalCell(digit,ORIGINAL_DIGIT_SEGMENTS[digit]));
 for(const digit of "0123456789"){const {wrap,svg}=baseTube();for(const segment of ALTERNATIVE_GLYPHS[digit])addSegment(svg,segment,{alternative:true});labelCell(wrap,digit,"alternative");alternative.append(wrap)}
-for(const digit of "0123456789"){const {wrap,svg}=baseTube();for(const id of ORIGINAL_DIGIT_SEGMENTS[digit])addSegment(svg,ORIGINAL_SEGMENTS[id],{colour:colours[id],debug:true});labelCell(wrap,digit,ORIGINAL_DIGIT_SEGMENTS[digit].join(" + "));coloured.append(wrap)}
+for(const digit of "0123456789")coloured.append(originalCell(digit,ORIGINAL_DIGIT_SEGMENTS[digit],{colour:true}));
 for(const [id,segment] of Object.entries(ORIGINAL_SEGMENTS)){const item=document.createElement("div");item.innerHTML=`<span class="swatch" style="background:${colours[id]}"></span><b>${id}</b> — ${segment.name}`;legend.append(item)}
 </script>
 </body>
