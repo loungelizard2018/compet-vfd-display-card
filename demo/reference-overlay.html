@@ -9,11 +9,18 @@
 </head>
 <body>
 <h1>COMPET 18 photographic reference overlay</h1>
-<p>Load the supplied photograph locally, select a numeral and align the canonical A–H segment set. This page never performs OCR and never creates digit-specific paths.</p>
+<p>Load the supplied photograph locally and compare the corrected canonical segments. No OCR and no digit-specific paths are used.</p>
 <div class="controls">
 <label>Reference image <input id="file" type="file" accept="image/*"></label>
 <label>Image opacity <input id="imageOpacity" type="range" min="0" max="1" step=".01" value=".78"></label>
 <label>Overlay opacity <input id="overlayOpacity" type="range" min="0" max="1" step=".01" value=".9"></label>
+<label>Review mode <select id="mode">
+  <option value="digit1">Digit 1 — G + H</option>
+  <option value="digit2">Digit 2 — B + C + D + E</option>
+  <option value="gh">Segments G/H only</option>
+  <option value="bcde">Segments B/C/D/E only</option>
+  <option value="digit">Generic digit</option>
+</select></label>
 <label>Digit <select id="digit"></select></label>
 <label>X <input id="offsetX" type="range" min="-500" max="500" value="0"></label>
 <label>Y <input id="offsetY" type="range" min="-250" max="250" value="0"></label>
@@ -25,17 +32,27 @@
 <button id="export">Export PNG</button>
 </div>
 <div id="stage" class="stage"><img id="photo" alt="local reference"><svg id="overlay" viewBox="0 0 1280 480"></svg></div>
-<div class="note">The transform controls apply only to the complete numeral cell, never to individual segments.</div>
+<div class="note">Transform controls apply only to the complete numeral cell. D and E are fixed stored counterparts of C and B; no runtime segment transform occurs.</div>
 <script type="module">
 import { ORIGINAL_SEGMENTS, ORIGINAL_DIGIT_SEGMENTS } from "../compet-vfd-segments.js";
 const NS="http://www.w3.org/2000/svg", colours={A:"#ff4358",B:"#ff9e2f",C:"#ffe04b",D:"#3bdb6f",E:"#36dce7",F:"#4f8cff",G:"#a767ff",H:"#ff54c8"};
 const el=(name,attrs={})=>{const n=document.createElementNS(NS,name);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);return n};
 for(const d of "0123456789"){const o=document.createElement("option");o.value=d;o.textContent=d;digit.append(o)}digit.value="8";
 for(const id of Object.keys(ORIGINAL_SEGMENTS)){const l=document.createElement("label");l.innerHTML=`<input type="checkbox" value="${id}" checked> ${id}`;checks.append(l)}
-function draw(){overlay.innerHTML="";overlay.style.opacity=overlayOpacity.value;photo.style.opacity=imageOpacity.value;const group=el("g",{transform:`translate(${640+Number(offsetX.value)} ${240+Number(offsetY.value)}) rotate(${rotation.value}) scale(${scale.value}) translate(-40 -66)`});const active=new Set(ORIGINAL_DIGIT_SEGMENTS[digit.value]);for(const id of active){const box=checks.querySelector(`input[value="${id}"]`);if(!box?.checked)continue;const s=ORIGINAL_SEGMENTS[id];group.append(el("path",{d:s.path,fill:"none",stroke:colours[id],"stroke-width":s.width,"stroke-linecap":"butt","stroke-linejoin":"round",opacity:".95"}));if(labels.checked){const path=group.lastChild;overlay.append(group);const p=path.getPointAtLength(path.getTotalLength()/2);const t=el("text",{x:p.x+2,y:p.y-2,fill:"white","font-size":"7","font-weight":"700",stroke:"black","stroke-width":"2","paint-order":"stroke"});t.textContent=id;group.append(t)}}if(wire.checked)group.append(el("path",{d:"M40 6V124",stroke:"#d6cf98","stroke-width":".8","stroke-dasharray":"2 2",opacity:".75"}));if(!group.parentNode)overlay.append(group)}
+function selectedIds(){if(mode.value==="digit1")return ["G","H"];if(mode.value==="digit2")return ["B","C","D","E"];if(mode.value==="gh")return ["G","H"];if(mode.value==="bcde")return ["B","C","D","E"];return ORIGINAL_DIGIT_SEGMENTS[digit.value]||[]}
+function draw(){
+  overlay.innerHTML="";overlay.style.opacity=overlayOpacity.value;photo.style.opacity=imageOpacity.value;digit.disabled=mode.value!=="digit";
+  const group=el("g",{transform:`translate(${640+Number(offsetX.value)} ${240+Number(offsetY.value)}) rotate(${rotation.value}) scale(${scale.value}) translate(-40 -66)`});
+  for(const id of selectedIds()){
+    const box=checks.querySelector(`input[value="${id}"]`);if(!box?.checked)continue;const s=ORIGINAL_SEGMENTS[id];
+    const path=el("path",{d:s.path,fill:"none",stroke:colours[id],"stroke-width":s.width,"stroke-linecap":"butt","stroke-linejoin":"round",opacity:".95"});group.append(path);
+    if(labels.checked){const p=path.getPointAtLength(path.getTotalLength()/2),t=el("text",{x:p.x+2,y:p.y-2,fill:"white","font-size":"7","font-weight":"700",stroke:"black","stroke-width":"2","paint-order":"stroke"});t.textContent=id;group.append(t)}
+  }
+  if(wire.checked)group.append(el("path",{d:"M40 6V124",stroke:"#d6cf98","stroke-width":".8","stroke-dasharray":"2 2",opacity:".75"}));overlay.append(group)
+}
 for(const input of document.querySelectorAll("input,select"))input.addEventListener("input",draw);
 file.addEventListener("change",()=>{const f=file.files?.[0];if(!f)return;photo.src=URL.createObjectURL(f)});
-export.addEventListener("click",()=>{const c=document.createElement("canvas");c.width=1280;c.height=480;const ctx=c.getContext("2d");ctx.fillStyle="#000";ctx.fillRect(0,0,c.width,c.height);if(photo.complete&&photo.naturalWidth){ctx.globalAlpha=Number(imageOpacity.value);ctx.drawImage(photo,0,0,c.width,c.height)}const xml=new XMLSerializer().serializeToString(overlay);const blob=new Blob([xml],{type:"image/svg+xml"});const img=new Image();img.onload=()=>{ctx.globalAlpha=1;ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);const a=document.createElement("a");a.download=`compet-overlay-${digit.value}.png`;a.href=c.toDataURL("image/png");a.click()};img.src=URL.createObjectURL(blob)});draw();
+export.addEventListener("click",()=>{const c=document.createElement("canvas");c.width=1280;c.height=480;const ctx=c.getContext("2d");ctx.fillStyle="#000";ctx.fillRect(0,0,c.width,c.height);if(photo.complete&&photo.naturalWidth){ctx.globalAlpha=Number(imageOpacity.value);ctx.drawImage(photo,0,0,c.width,c.height)}const xml=new XMLSerializer().serializeToString(overlay),blob=new Blob([xml],{type:"image/svg+xml"}),img=new Image();img.onload=()=>{ctx.globalAlpha=1;ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);const a=document.createElement("a");a.download=`compet-overlay-${mode.value}.png`;a.href=c.toDataURL("image/png");a.click()};img.src=URL.createObjectURL(blob)});draw();
 </script>
 </body>
 </html>
