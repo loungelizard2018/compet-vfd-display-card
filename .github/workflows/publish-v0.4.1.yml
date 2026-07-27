@@ -58,3 +58,12 @@ jobs:
               --title "v0.4.1" \
               --notes "Fixes HACS loading by shipping compet-vfd-display-card.js as one self-contained bundle with no relative runtime imports. Preserves the photographic 48x80 four-level COMPET electrode renderer and style: alternative."
           fi
+          gh release view v0.4.1 --json tagName,isDraft,isPrerelease,url > /tmp/release.json
+
+      - name: Record successful publication
+        shell: bash
+        run: |
+          cp /tmp/release.json .release-v0.4.1-published.json
+          git add .release-v0.4.1-published.json
+          git commit -m "Record successful v0.4.1 publication" || exit 0
+          git push origin HEAD:main
