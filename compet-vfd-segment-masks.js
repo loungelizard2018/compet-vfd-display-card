@@ -10,7 +10,7 @@ const RLE_MASKS = Object.freeze({
   "C": "zo0.32.11.170.11.12.23.12.170.12.33.12.160.11.43.12.11.150.12.43.12.150.12.43.12.150.12.43.12.150.12.53.11.140.11.12.33.12.11.150.12.33.12.160.12.33.12.11.150.12.33.12.150.11.12.33.12.160.12.23.12.11.170.11.12.11.1gj0",
   "D": "1gj0.11.12.11.170.11.12.23.12.160.12.33.12.11.150.12.33.12.150.11.12.33.12.160.12.33.12.150.11.12.33.12.11.140.11.53.12.150.12.43.12.150.12.43.12.150.12.43.12.150.11.12.43.11.160.12.33.12.170.12.23.12.11.170.11.32.zo0",
   "E": "1y20.21.180.11.12.23.11.v0.61.50.11.12.33.12.u0.12.73.32.63.11.u0.11.22.c3.12.110.51.32.11.tz0",
-  "F": "1gr0.11.22.11.170.12.33.12.11.150.12.33.12.170.42.170.11.42.170.12.43.12.11.160.22.33.12.11.160.11.12.33.12.11.160.11.12.33.12.160.11.12.33.12.160.11.12.33.12.160.11.12.33.12.160.11.12.33.11.160.12.43.11.160.12.33.12.11.150.12.33.12.11.150.12.43.12.130.21.22.33.12.130.22.53.12.11.130.53.22.11.140.11.32.11.ra0",
+  "F": "1gr0.11.22.11.170.12.33.12.11.150.12.33.12.170.42.170.11.42.170.12.43.12.11.160.22.33.12.11.160.11.12.33.12.11.160.11.12.33.12.160.11.12.33.12.160.11.12.33.12.160.11.12.33.12.160.11.12.33.12.160.11.12.33.11.160.12.43.11.160.12.33.12.11.150.12.33.12.11.150.12.43.12.130.21.22.33.12.130.22.53.12.11.130.53.22.11.140.11.32.11.ra0",
   "G": "su0.11.32.11.150.11.12.53.11.140.12.63.12.140.11.12.53.11.140.12.53.12.140.11.12.43.12.11.140.11.12.33.12.11.140.11.12.43.12.150.12.53.12.140.11.12.33.12.11.150.12.43.12.160.12.43.11.160.12.33.12.11.160.12.33.11.170.11.32.1n70",
   "H": "1fc0.31.190.12.13.12.11.170.12.23.12.11.160.11.12.23.12.170.12.33.11.160.11.33.12.170.12.33.12.160.11.43.11.150.11.12.33.12.11.150.12.43.12.160.12.43.12.150.11.53.11.150.11.12.33.12.180.31.1210"
 });
@@ -28,10 +28,7 @@ function decodeMask(encoded) {
   ));
 }
 
-/**
- * Fine 48x80, four-level masks derived from perspective-corrected COMPET 18
- * digit references. Values: 0=off, 1=weak glow, 2=medium, 3=bright core.
- */
+/** Fine 48x80, four-level masks derived from perspective-corrected COMPET 18 digit references. */
 export const ORIGINAL_SEGMENT_MASKS = Object.freeze(Object.fromEntries(
   Object.entries(RLE_MASKS).map(([id, encoded]) => [id, decodeMask(encoded)])
 ));
@@ -49,7 +46,7 @@ export function activeCellsForSegment(id, source = ORIGINAL_SEGMENT_MASKS, minim
   return Object.freeze(result);
 }
 
-export function composeDigitMask(digit, source = ORIGINAL_SEGMENT_MASKS) {
+export function composeDigitLevels(digit, source = ORIGINAL_SEGMENT_MASKS) {
   const grid = blank();
   for (const id of ORIGINAL_DIGIT_SEGMENTS[String(digit)] || []) {
     const mask = source[id];
@@ -58,7 +55,11 @@ export function composeDigitMask(digit, source = ORIGINAL_SEGMENT_MASKS) {
       grid[r][c] = Math.max(grid[r][c], Number(value));
     }));
   }
-  return Object.freeze(grid.map((row) => row.join("")));
+  return Object.freeze(grid.map((row) => Object.freeze(row)));
+}
+
+export function composeDigitMask(digit, source = ORIGINAL_SEGMENT_MASKS) {
+  return Object.freeze(composeDigitLevels(digit, source).map((row) => row.join("")));
 }
 
 export function maskToPointList(maskRows, minimumLevel = 1) {
@@ -71,9 +72,7 @@ export function maskToPointList(maskRows, minimumLevel = 1) {
 }
 
 export function maskToSvgCellPath(maskRows, cellWidth = 1, cellHeight = 1, minimumLevel = 1) {
-  return maskToPointList(maskRows, minimumLevel)
-    .map(({ x, y }) => `M${(x - 0.5) * cellWidth} ${(y - 0.5) * cellHeight}h${cellWidth}v${cellHeight}h-${cellWidth}Z`)
-    .join("");
+  return maskToPointList(maskRows, minimumLevel).map(({ x, y }) => `M${(x - 0.5) * cellWidth} ${(y - 0.5) * cellHeight}h${cellWidth}v${cellHeight}h-${cellWidth}Z`).join("");
 }
 
 export function minimumMaskGap(maskA, maskB, minimumLevel = 1) {
