@@ -1,0 +1,119 @@
+name: Publish v0.4.2 runtime mask fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/publish-v0.4.2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix-test-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Correct mask F and bump version
+        shell: python
+        run: |
+          from pathlib import Path
+
+          bundle = Path("compet-vfd-display-card.js")
+          text = bundle.read_text()
+          assert 'const VERSION = "0.4.1";' in text
+          assert text.count('.ra0"') == 1, text.count('.ra0"')
+          text = text.replace('.ra0"', '.py0"')
+          text = text.replace('Version 0.4.1 — self-contained HACS bundle', 'Version 0.4.2 — self-contained HACS bundle')
+          text = text.replace('const VERSION = "0.4.1";', 'const VERSION = "0.4.2";')
+          bundle.write_text(text)
+
+          source = Path("compet-vfd-segment-masks.js")
+          text = source.read_text()
+          assert text.count('.ra0"') == 1, text.count('.ra0"')
+          source.write_text(text.replace('.ra0"', '.py0"'))
+
+          package = Path("package.json")
+          text = package.read_text()
+          assert '"version": "0.4.1"' in text
+          package.write_text(text.replace('"version": "0.4.1"', '"version": "0.4.2"'))
+
+          changelog = Path("CHANGELOG.md")
+          text = changelog.read_text()
+          entry = '''# Changelog\n\n## 0.4.2\n\n- Fixed the photographic `F` electrode mask length from 3888 to the required 3840 cells.\n- Prevented the bundle from throwing before `customElements.define()`.\n- Added a runtime registration smoke test for the self-contained HACS bundle.\n\n'''
+          assert text.startswith('# Changelog\n')
+          changelog.write_text(entry + text[len('# Changelog\n\n'):])
+
+      - name: Add runtime registration smoke test
+        shell: bash
+        run: |
+          cat > tests/bundle-registration.test.mjs <<'EOF'
+          import test from "node:test";
+          import assert from "node:assert/strict";
+
+          test("self-contained HACS bundle registers its custom element", async () => {
+            const registry = new Map();
+            globalThis.HTMLElement = class HTMLElement {};
+            globalThis.customElements = {
+              get(name) { return registry.get(name); },
+              define(name, constructor) { registry.set(name, constructor); }
+            };
+            globalThis.window = { customCards: [] };
+
+            await import(`../compet-vfd-display-card.js?smoke=${Date.now()}`);
+
+            assert.equal(typeof registry.get("compet-vfd-display-card"), "function");
+            assert.ok(window.customCards.some((card) => card.type === "compet-vfd-display-card"));
+          });
+          EOF
+
+      - name: Validate source and runtime registration
+        shell: bash
+        run: |
+          node --check compet-vfd-display-card.js
+          node --check compet-vfd-segment-masks.js
+          npm test
+          grep -Fq 'const VERSION = "0.4.2";' compet-vfd-display-card.js
+          if grep -Eq '^[[:space:]]*(import|export)[[:space:]]' compet-vfd-display-card.js; then
+            echo "HACS bundle contains runtime imports or exports"
+            exit 1
+          fi
+
+      - name: Commit corrected release sources
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add compet-vfd-display-card.js compet-vfd-segment-masks.js package.json CHANGELOG.md tests/bundle-registration.test.mjs
+          git commit -m "fix: prevent v0.4.1 mask decode failure"
+          git push origin main
+
+      - name: Create v0.4.2 tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          git tag -a v0.4.2 -m "COMPET VFD Display Card v0.4.2"
+          git push origin v0.4.2
+          gh release create v0.4.2 \
+            compet-vfd-display-card.js \
+            brand/icon.png \
+            brand/icon@2x.png \
+            --verify-tag \
+            --title "v0.4.2" \
+            --notes "Runtime fix: corrects the F electrode RLE mask from 3888 to 3840 cells. The bundle now completes initialisation and registers custom:compet-vfd-display-card. Includes a browser-registration smoke test."
+
+      - name: Store release verification
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v0.4.2 --json tagName,isDraft,isPrerelease,url > RELEASE_V0.4.2_VERIFIED.json
+          git add RELEASE_V0.4.2_VERIFIED.json
+          git commit -m "docs: record v0.4.2 release verification"
+          git push origin main
