@@ -4,7 +4,16 @@ const fractions = (count, start = 0.04, end = 0.96) => Object.freeze(
   )
 );
 
-const physicalSegment = ({ id, name, path, width, dots, startInset = 1.0, endInset = 1.0 }) => Object.freeze({
+const physicalSegment = ({
+  id,
+  name,
+  path,
+  width,
+  dots,
+  startInset = 1.0,
+  endInset = 1.0,
+  derivedFrom = null
+}) => Object.freeze({
   id,
   name,
   path,
@@ -13,15 +22,20 @@ const physicalSegment = ({ id, name, path, width, dots, startInset = 1.0, endIns
   startInset,
   endInset,
   linecap: "butt",
-  dotFractions: fractions(dots)
+  dotFractions: fractions(dots),
+  derivedFrom
 });
 
 /**
  * Canonical SHARP COMPET 18 electrode set reconstructed from the supplied
- * calculator photograph. Each segment exists exactly once and is reused by
+ * calculator photographs. Each segment exists exactly once and is reused by
  * object identity in every numeral that lights it.
  *
  * Coordinate system: SVG viewBox 0 0 80 132.
+ *
+ * D is the fixed 180-degree counterpart of C around the cell centre (40, 66).
+ * E is the fixed 180-degree counterpart of B around the same centre.
+ * These are final stored paths; no runtime transform is used.
  */
 export const ORIGINAL_SEGMENTS = Object.freeze({
   A: physicalSegment({
@@ -54,20 +68,22 @@ export const ORIGINAL_SEGMENTS = Object.freeze({
   D: physicalSegment({
     id: "D",
     name: "lower-left-sweep",
-    path: "M34.3 69.6 C31.2 75.4 24.4 83.6 18.4 93.6",
-    width: 3.90,
-    dots: 12,
-    startInset: 1.15,
-    endInset: 1.15
+    path: "M34.0 67.3 C31.3 75.5 27.5 82.0 23.4 87.6 C18.7 93.9 16.0 101.0 17.6 106.8",
+    width: 3.85,
+    dots: 18,
+    startInset: 1.20,
+    endInset: 1.10,
+    derivedFrom: "C@rotate180(40,66)"
   }),
   E: physicalSegment({
     id: "E",
     name: "lower-base",
-    path: "M12.0 101.3 C18.3 111.8 35.2 114.7 50.1 100.6",
-    width: 3.95,
-    dots: 18,
-    startInset: 1.10,
-    endInset: 1.10
+    path: "M20.2 112.4 C32.3 115.3 44.3 114.8 50.0 108.3",
+    width: 3.85,
+    dots: 13,
+    startInset: 1.05,
+    endInset: 1.05,
+    derivedFrom: "B@rotate180(40,66)"
   }),
   F: physicalSegment({
     id: "F",
@@ -81,20 +97,20 @@ export const ORIGINAL_SEGMENTS = Object.freeze({
   G: physicalSegment({
     id: "G",
     name: "one-upper-slash",
-    path: "M47.5 16.0 C45.9 26.7 42.6 43.7 39.0 61.7",
-    width: 3.75,
-    dots: 19,
-    startInset: 1.10,
-    endInset: 1.20
+    path: "M48.2 17.4 C47.1 22.8 45.6 30.8 43.7 40.5",
+    width: 3.90,
+    dots: 11,
+    startInset: 0.95,
+    endInset: 1.00
   }),
   H: physicalSegment({
     id: "H",
     name: "one-lower-slash",
-    path: "M35.6 75.8 C33.9 87.6 31.2 101.7 28.4 114.0",
-    width: 3.75,
-    dots: 16,
-    startInset: 1.15,
-    endInset: 1.10
+    path: "M37.3 72.2 C35.8 80.1 33.6 91.3 31.4 102.6",
+    width: 3.90,
+    dots: 13,
+    startInset: 1.00,
+    endInset: 0.95
   })
 });
 
