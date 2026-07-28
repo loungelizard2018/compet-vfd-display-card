@@ -2,6 +2,12 @@ name: Publish v0.5.3 geometry and reference documentation
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/v0.5.3-validation-trigger"
+      - "tools/release_v0_5_3.py"
+      - ".github/workflows/publish-v0.5.3.yml"
   push:
     branches: [main]
     paths:
@@ -49,6 +55,7 @@ jobs:
           test -s docs/compet-segment-reference.png
 
       - name: Commit v0.5.3 sources and generated assets
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -57,6 +64,7 @@ jobs:
           git push origin main
 
       - name: Publish GitHub release
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
