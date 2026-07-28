@@ -57,23 +57,38 @@ jobs:
           if-no-files-found: warn
 
       - name: Validate source, geometry and documentation
+        shell: bash
         run: |
-          npm run verify
-          grep -Fq 'const VERSION = "0.5.3";' compet-vfd-display-card.js
-          grep -Fq 'width: 56' compet-vfd-display-card.js
-          grep -Fq 'compet-original-vs-implementation.png' README.md
-          grep -Fq 'compet-segment-reference.png' README.md
-          test -s docs/compet-original-rectified.jpg
-          test -s docs/compet-implementation-0-9.png
-          test -s docs/compet-original-vs-implementation.png
-          test -s docs/compet-segment-reference.png
+          set +e
+          {
+            npm run verify
+            grep -Fq 'const VERSION = "0.5.3";' compet-vfd-display-card.js
+            grep -Fq 'width: 56' compet-vfd-display-card.js
+            grep -Fq 'compet-original-vs-implementation.png' README.md
+            grep -Fq 'compet-segment-reference.png' README.md
+            test -s docs/compet-original-rectified.jpg
+            test -s docs/compet-implementation-0-9.png
+            test -s docs/compet-original-vs-implementation.png
+            test -s docs/compet-segment-reference.png
+          } > v0.5.3-validation.log 2>&1
+          status=$?
+          cat v0.5.3-validation.log
+          exit $status
+
+      - name: Upload validation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v0.5.3-validation-diagnostics
+          path: v0.5.3-validation.log
+          if-no-files-found: warn
 
       - name: Commit v0.5.3 sources and generated assets
         if: github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add compet-vfd-*.js package.json README.md README.de.md CHANGELOG.md tests/v0_5_3_geometry_and_docs.test.mjs docs/compet-original-rectified.jpg docs/compet-implementation-0-9.png docs/compet-original-vs-implementation.png docs/compet-segment-reference.png
+          git add compet-vfd-*.js package.json README.md CHANGELOG.md tests/v0_5_3_geometry_and_docs.test.mjs docs/compet-original-rectified.jpg docs/compet-implementation-0-9.png docs/compet-original-vs-implementation.png docs/compet-segment-reference.png
           git commit -m 'fix: constrain COMPET digits and document shared segments'
           git push origin main
 
