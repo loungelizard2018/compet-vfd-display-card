@@ -12,6 +12,7 @@ on:
     branches: [main]
     paths:
       - ".github/v0.5.4-trigger"
+      - ".github/v0.5.4-validation-trigger"
 
 permissions:
   contents: write
