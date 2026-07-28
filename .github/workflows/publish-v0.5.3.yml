@@ -1,10 +1,12 @@
 name: Publish v0.5.3 geometry and reference documentation
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - ".github/workflows/publish-v0.5.3.yml"
+      - ".github/v0.5.3-trigger"
 
 permissions:
   contents: write
