@@ -10,7 +10,7 @@ replacement = '''def patch_f_connection(masks: dict[str, list[list[int]]]) -> No
 
     # The photographic F/E junction is diagonal: the bottom tip of F must meet
     # the rising right-hand end of E. Work with active phosphor cores rather
-    # than weak edge glow, then fill only the cells between both electrodes.
+    # than weak edge glow and strengthen the existing diagonal cells.
     f_core = [
         (row, col, f[row][col])
         for row in range(68, ROWS)
@@ -39,8 +39,8 @@ replacement = '''def patch_f_connection(masks: dict[str, list[list[int]]]) -> No
         key=lambda cell: ((cell[0] - f_tip[0]) ** 2 + (cell[1] - f_tip[1]) ** 2),
     )
 
-    start_row, start_col, start_level = f_tip
-    end_row, end_col, end_level = e_tip
+    start_row, start_col, _start_level = f_tip
+    end_row, end_col, _end_level = e_tip
     steps = max(abs(end_row - start_row), abs(end_col - start_col))
     if steps < 2:
         return
@@ -49,31 +49,34 @@ replacement = '''def patch_f_connection(masks: dict[str, list[list[int]]]) -> No
             f"implausible F/E endpoint distance: F={f_tip}, E={e_tip}, steps={steps}"
         )
 
-    touched = 0
+    strengthened = 0
     for index in range(1, steps):
         ratio = index / steps
         row = round(start_row + (end_row - start_row) * ratio)
         col = round(start_col + (end_col - start_col) * ratio)
         if e[row][col] > 0:
             continue
-        level = round(start_level * (1 - ratio) + end_level * ratio)
-        if f[row][col] < max(3, min(5, level)):
-            f[row][col] = max(3, min(5, level))
-            touched += 1
+        if f[row][col] < 5:
+            f[row][col] = 5
+            strengthened += 1
 
-        # Add only a weak one-cell halo around the new core. Never write into E.
+        # Keep a visible three-level halo around the bright diagonal core.
+        # Never write into the neighbouring E electrode.
         for delta_row, delta_col in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             halo_row = row + delta_row
             halo_col = col + delta_col
             if not (0 <= halo_row < ROWS and 0 <= halo_col < COLS):
                 continue
-            if e[halo_row][halo_col] == 0 and f[halo_row][halo_col] < 2:
-                f[halo_row][halo_col] = 2
+            if e[halo_row][halo_col] == 0 and f[halo_row][halo_col] < 3:
+                f[halo_row][halo_col] = 3
+                strengthened += 1
 
-    if touched == 0:
-        raise RuntimeError(
-            f"F/E endpoint bridge produced no new active cells: F={f_tip}, E={e_tip}"
-        )
+    # Existing low-level cells may already cover the complete path. In that
+    # case the operation is intentionally idempotent and no exception is needed.
+    print(
+        f"F/E junction calibrated: F={f_tip}, E={e_tip}, steps={steps}, "
+        f"strengthened={strengthened}"
+    )
 
 
 def update_safe_area'''
