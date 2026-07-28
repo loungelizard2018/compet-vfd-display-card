@@ -1,4 +1,4 @@
-## Segment F correction in v0.5.2
+## Segment F correction in v0.5.3
 
 The canonical lower-right electrode `F` is now an independent return segment with a dark optical gap to the shared lower-base electrode `E`. The same corrected mask is reused without transforms in `3`, `5`, `6` and `8`.
 
@@ -153,3 +153,32 @@ http://localhost:8000/demo/reference-overlay.html
 ## Licence
 
 MIT. This project is not affiliated with or endorsed by SHARP Corporation.
+
+<!-- COMPET_REFERENCE_START -->
+## Original reference and shared segment construction
+
+The perspective-corrected SHARP COMPET 18 screenshot is the canonical visual reference:
+
+![Rectified original reference](docs/compet-original-rectified.jpg)
+
+Side-by-side visual comparison of the original and the current implementation:
+
+![Original versus implementation](docs/compet-original-vs-implementation.png)
+
+The segment atlas below identifies all eight shared electrodes `A–H` and the exact composition of every digit:
+
+![Shared segment atlas A–H and digits 0–9](docs/compet-segment-reference.png)
+
+| Digit | Shared segments |
+|---:|---|
+| 0 | D + E + F |
+| 1 | G + H |
+| 2 | B + C + D + E |
+| 3 | B + C + E + F |
+| 4 | A + G + H |
+| 5 | A + B + E + F |
+| 6 | C + D + E + F |
+| 7 | B + C + H |
+| 8 | A + B + C + D + E + F |
+| 9 | A + B + C + H |
+<!-- COMPET_REFERENCE_END -->

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.3
+
+- Reduced and left-shifted the original glyph safe area so active electrodes and glow stay inside the right tube border.
+- Closed the lower-right `F` electrode flush against shared lower bowl `E` in digits 3, 5, 6 and 8 without overlapping cells.
+- Added a perspective-corrected original COMPET 18 reference image to the documentation.
+- Added current implementation, original-versus-implementation and shared-segment atlas renderings.
+
 ## 0.5.2
 
 - Fit the complete original phosphor matrix into a fixed inner-tube safe area.
