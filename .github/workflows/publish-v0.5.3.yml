@@ -1,0 +1,74 @@
+name: Publish v0.5.3 geometry and reference documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-v0.5.3.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-test-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install image tooling
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Build corrected geometry and documentation assets
+        run: python tools/release_v0_5_3.py
+
+      - name: Validate source, geometry and documentation
+        run: |
+          npm run verify
+          grep -Fq 'const VERSION = "0.5.3";' compet-vfd-display-card.js
+          grep -Fq 'width: 56' compet-vfd-display-card.js
+          grep -Fq 'compet-original-vs-implementation.png' README.md
+          grep -Fq 'compet-segment-reference.png' README.md
+          test -s docs/compet-original-rectified.jpg
+          test -s docs/compet-implementation-0-9.png
+          test -s docs/compet-original-vs-implementation.png
+          test -s docs/compet-segment-reference.png
+
+      - name: Commit v0.5.3 sources and generated assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add compet-vfd-*.js package.json README.md README.de.md CHANGELOG.md tests/v0_5_3_geometry_and_docs.test.mjs docs/compet-original-rectified.jpg docs/compet-implementation-0-9.png docs/compet-original-vs-implementation.png docs/compet-segment-reference.png
+          git commit -m 'fix: constrain COMPET digits and document shared segments'
+          git push origin main
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! git rev-parse -q --verify refs/tags/v0.5.3 >/dev/null; then
+            git tag -a v0.5.3 -m 'COMPET VFD Display Card v0.5.3'
+            git push origin v0.5.3
+          fi
+          if ! gh release view v0.5.3 >/dev/null 2>&1; then
+            gh release create v0.5.3 \
+              --verify-tag \
+              --title 'v0.5.3' \
+              --notes 'Corrects the right tube fit, closes the shared F/E lower junction in digits 3, 5, 6 and 8, and adds aligned original, implementation comparison and A-H segment reference graphics to the documentation.'
+          fi
+          gh release view v0.5.3 --json tagName,isDraft,isPrerelease,url > RELEASE_V0.5.3_VERIFIED.json
+          git add RELEASE_V0.5.3_VERIFIED.json
+          git commit -m 'docs: record v0.5.3 release verification'
+          git push origin main
