@@ -1,7 +1,7 @@
-import { configMethods } from "./compet-vfd-config.js?v=0.5.3";
-import { renderMethods } from "./compet-vfd-render.js?v=0.5.3";
-import { updateMethods } from "./compet-vfd-update.js?v=0.5.3";
-import { utilityMethods } from "./compet-vfd-utils.js?v=0.5.3";
+import { configMethods } from "./compet-vfd-config.js?v=0.5.4";
+import { renderMethods } from "./compet-vfd-render.js?v=0.5.4";
+import { updateMethods } from "./compet-vfd-update.js?v=0.5.4";
+import { utilityMethods } from "./compet-vfd-utils.js?v=0.5.4";
 
 export class CompetVfdDisplayCard extends HTMLElement {
   constructor() {

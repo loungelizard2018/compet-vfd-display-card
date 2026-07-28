@@ -1,10 +1,10 @@
-import { fieldSegments, glyphSegments, ORIGINAL_DIGIT_SEGMENTS } from "./compet-vfd-glyphs.js?v=0.5.3";
+import { fieldSegments, glyphSegments, ORIGINAL_DIGIT_SEGMENTS } from "./compet-vfd-glyphs.js?v=0.5.4";
 import {
   MATRIX_COLS,
   MATRIX_ROWS,
   ORIGINAL_SEGMENT_MASKS,
   activeCellsForSegment
-} from "./compet-vfd-segment-masks.js?v=0.5.3";
+} from "./compet-vfd-segment-masks.js?v=0.5.4";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -56,6 +56,32 @@ function originalActiveGlyph(character, filterId) {
   }).join("");
 }
 
+function originalJunctionBridge(character, filterId) {
+  const segments = ORIGINAL_DIGIT_SEGMENTS[String(character)] || [];
+  if (!segments.includes("E") || !segments.includes("F")) return "";
+
+  const samples = Object.freeze([
+    [97.00, 59.00],
+    [97.38, 59.34],
+    [97.76, 59.72],
+    [98.14, 60.10],
+    [98.52, 60.48],
+    [98.90, 60.86],
+    [99.28, 61.24],
+    [99.66, 61.62],
+    [100.00, 62.00],
+  ]);
+
+  return samples.map(([row, col], index) => {
+    const point = maskCoordinate(row, col);
+    const radius = index === 0 || index === samples.length - 1 ? 0.58 : 0.54;
+    return `<g class="mask-cell junction-bridge" data-segment-id="F-E">
+      <circle class="mask-glow" cx="${point.x}" cy="${point.y}" r="1.320" opacity="0.94" filter="url(#${filterId}-glow)"/>
+      <circle class="mask-dot" cx="${point.x}" cy="${point.y}" r="${radius.toFixed(3)}" opacity="1"/>
+    </g>`;
+  }).join("");
+}
+
 export const renderMethods = {
   _render() {
     if (!this._config) return;
@@ -103,7 +129,7 @@ export const renderMethods = {
 
     if (style === "original") {
       ghosts = originalGhostField();
-      active = originalActiveGlyph(character, id);
+      active = originalActiveGlyph(character, id) + originalJunctionBridge(character, id);
     } else {
       ghosts = fieldSegments(style).map((s) => `<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}" data-segment-id="${this._esc(s.id)}"/>`).join("");
       active = glyphSegments(style, character).map((s) => `<g class="physical-segment" data-segment-id="${this._esc(s.id)}" data-segment-name="${this._esc(s.name || s.id)}">

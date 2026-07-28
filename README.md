@@ -1,4 +1,8 @@
-## Segment F correction in v0.5.3
+## Visible F/E junction in v0.5.4
+
+Digits `3`, `5`, `6` and `8` still reuse the same shared `E` and `F` electrodes. The diagonal transition is now rendered with nine tightly spaced phosphor dots so the junction remains visibly closed in the actual Home Assistant card.
+
+## Segment F correction in v0.5.4
 
 The canonical lower-right electrode `F` is now an independent return segment with a dark optical gap to the shared lower-base electrode `E`. The same corrected mask is reused without transforms in `3`, `5`, `6` and `8`.
 

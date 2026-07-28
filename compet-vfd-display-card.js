@@ -1,6 +1,6 @@
 /**
  * COMPET VFD Display Card for Home Assistant
- * Version 0.5.3 - corrected right fit, F/E junction and documentation reference
+ * Version 0.5.4 - visible dotted F/E junction and verified Home Assistant rendering
  *
  * No external imports are required. This is intentional: HACS dashboard
  * resources may install only the configured entry file.
@@ -8,7 +8,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "0.5.3";
+  const VERSION = "0.5.4";
   const SVG_NS = "http://www.w3.org/2000/svg";
   const MATRIX_COLS = 72;
   const MATRIX_ROWS = 120;
@@ -125,6 +125,34 @@
       .join("");
   };
 
+  const originalJunctionBridge = (character, filterId) => {
+    const segments = DIGIT_SEGMENTS[String(character)] || [];
+    if (!segments.includes("E") || !segments.includes("F")) return "";
+
+    const samples = Object.freeze([
+      [97.00, 59.00],
+      [97.38, 59.34],
+      [97.76, 59.72],
+      [98.14, 60.10],
+      [98.52, 60.48],
+      [98.90, 60.86],
+      [99.28, 61.24],
+      [99.66, 61.62],
+      [100.00, 62.00],
+    ]);
+
+    return samples.map(([row, col], index) => {
+      const p = maskCoordinate(row, col);
+      const cx = Number(p.x).toFixed(3);
+      const cy = Number(p.y).toFixed(3);
+      const radius = index === 0 || index === samples.length - 1 ? 0.58 : 0.54;
+      return `<g class="mask-cell junction-bridge" data-segment-id="F-E">
+        <circle class="mask-glow" cx="${cx}" cy="${cy}" r="1.320" opacity="0.94" filter="url(#${filterId}-glow)"/>
+        <circle class="mask-dot" cx="${cx}" cy="${cy}" r="${radius.toFixed(3)}" opacity="1"/>
+      </g>`;
+    }).join("");
+  };
+
   const altSegment = (id, d, width = 4.45, startInset = 0.3, endInset = 0.3) =>
     Object.freeze({ id, d, width, startInset, endInset });
 
@@ -221,7 +249,7 @@
 
     _tube(index, character) {
       const id=`cvfd-${index}`, style=this._config.style==="alternative"?"alternative":"original"; let ghosts="", active="";
-      if(style==="original"){ghosts=originalGhostField();active=originalActiveGlyph(character,id);}else{
+      if(style==="original"){ghosts=originalGhostField();active=originalActiveGlyph(character,id)+originalJunctionBridge(character,id);}else{
         ghosts=ALT_FIELD.map(s=>`<path class="ghost-segment" d="${s.d}" style="--segment-width:${s.width}" data-segment-id="${this._esc(s.id)}"/>`).join("");
         active=(ALT_GLYPHS[character]||ALT_GLYPHS[" "]).map(s=>`<g class="physical-segment" data-segment-id="${this._esc(s.id)}"><path class="segment-glow" d="${s.d}" style="--segment-width:${s.width};--segment-glow-width:${(s.width+2.8).toFixed(2)}" filter="url(#${id}-glow)"/><path class="segment-band" d="${s.d}" style="--segment-width:${s.width}"/><path class="segment-guide" d="${s.d}" data-start-inset="${s.startInset}" data-end-inset="${s.endInset}"/><g class="phosphor-dots"></g></g>`).join("");
       }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.4
+
+- Added a clearly visible nine-dot diagonal phosphor junction between shared electrodes F and E.
+- Applied the junction only to digits 3, 5, 6 and 8, preserving the canonical shared-electrode model.
+- Kept the self-contained HACS bundle and modular renderer visually consistent.
+- Added regression tests that verify the bridge is rendered and versioned in both implementations.
+
 ## 0.5.3
 
 - Reduced and left-shifted the original glyph safe area so active electrodes and glow stay inside the right tube border.
