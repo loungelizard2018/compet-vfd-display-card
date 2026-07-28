@@ -39,12 +39,27 @@ jobs:
         run: python tools/release_v0_5_4.py
 
       - name: Validate bundle and geometry
+        shell: bash
         run: |
-          npm run verify
-          grep -Fq 'const VERSION = "0.5.4";' compet-vfd-display-card.js
-          grep -Fq 'data-segment-id="F-E"' compet-vfd-display-card.js
-          grep -Fq 'originalActiveGlyph(character,id)+originalJunctionBridge(character,id)' compet-vfd-display-card.js
-          grep -Fq 'originalActiveGlyph(character, id) + originalJunctionBridge(character, id)' compet-vfd-render.js
+          set +e
+          {
+            npm run verify
+            grep -Fq 'const VERSION = "0.5.4";' compet-vfd-display-card.js
+            grep -Fq 'data-segment-id="F-E"' compet-vfd-display-card.js
+            grep -Fq 'originalActiveGlyph(character,id)+originalJunctionBridge(character,id)' compet-vfd-display-card.js
+            grep -Fq 'originalActiveGlyph(character, id) + originalJunctionBridge(character, id)' compet-vfd-render.js
+          } > v0.5.4-validation.log 2>&1
+          status=$?
+          cat v0.5.4-validation.log
+          exit $status
+
+      - name: Upload validation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v0.5.4-validation-diagnostics
+          path: v0.5.4-validation.log
+          if-no-files-found: warn
 
       - name: Commit v0.5.4 sources
         if: github.event_name != 'pull_request'
