@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/v0.5.3-validation-trigger"
       - "tools/release_v0_5_3.py"
+      - "tools/patch_release_v0_5_3_generator.py"
       - ".github/workflows/publish-v0.5.3.yml"
   push:
     branches: [main]
@@ -43,7 +44,10 @@ jobs:
         shell: bash
         run: |
           set +e
-          python tools/release_v0_5_3.py > v0.5.3-build.log 2>&1
+          {
+            python tools/patch_release_v0_5_3_generator.py
+            python tools/release_v0_5_3.py
+          } > v0.5.3-build.log 2>&1
           status=$?
           cat v0.5.3-build.log
           exit $status
